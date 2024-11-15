@@ -4,13 +4,19 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.RectF
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
+import android.media.Image
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
+import android.util.Log
 import android.view.Surface
 import android.view.TextureView
 import android.widget.ImageView
@@ -20,8 +26,23 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.windrose.databinding.ActivityMainBinding
+import com.example.windrose.ml.AutoModel2
+
+import org.tensorflow.lite.DataType
+import org.tensorflow.lite.support.common.FileUtil
+import org.tensorflow.lite.support.image.ImageProcessor
+import org.tensorflow.lite.support.image.TensorImage
+import org.tensorflow.lite.support.image.ops.ResizeOp
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
+import java.nio.ByteBuffer
 
 class MainActivity : AppCompatActivity() {
+    val paint = Paint()
+    lateinit var labels:List<String>
+    var colors = listOf<Int>(
+        Color.BLUE, Color.GREEN, Color.RED, Color.CYAN, Color.GRAY, Color.BLACK,
+        Color.DKGRAY, Color.MAGENTA, Color.YELLOW, Color.RED)
+    lateinit var imageProcessor: ImageProcessor
     private lateinit var binding: ActivityMainBinding
     lateinit var bitmap: Bitmap
     lateinit var textureView: TextureView
@@ -30,11 +51,18 @@ class MainActivity : AppCompatActivity() {
     lateinit var cameraDevice: CameraDevice
     lateinit var cameraManager: CameraManager
     lateinit var handler: Handler
+    lateinit var model: AutoModel2
+
+    private var scores: FloatArray = floatArrayOf()
+    private var locations: FloatArray = floatArrayOf()
+    private var classes: FloatArray = floatArrayOf()
 
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
@@ -46,12 +74,60 @@ class MainActivity : AppCompatActivity() {
         }
         getPermission()
 
+        labels = FileUtil.loadLabels(this, "labels.txt")
+        imageProcessor = ImageProcessor.Builder().add(ResizeOp(300,300,ResizeOp.ResizeMethod.BILINEAR)).build()
+
+        model = AutoModel2.newInstance(this)
+
         val handlerThread = HandlerThread("videoThread")
         handlerThread.start()
         handler = Handler(handlerThread.looper)
 
         imageView = binding.imageView
         textureView = binding.textureView
+
+        imageView.setOnTouchListener { _, event ->
+            if (event.action == android.view.MotionEvent.ACTION_DOWN) {
+                val x = event.x
+                val y = event.y
+
+                // Verifica se o toque está dentro de alguma bounding box
+                val h = bitmap.height
+                val w = bitmap.width
+                var isClickedOnBox = false
+
+                scores.forEachIndexed { index, score ->
+                    if (score > 0.5) {
+                        val boxIndex = index * 4
+                        val top = locations[boxIndex] * h
+                        val left = locations[boxIndex + 1] * w
+                        val bottom = locations[boxIndex + 2] * h
+                        val right = locations[boxIndex + 3] * w
+
+                        // Verifica se o clique está dentro das coordenadas da bounding box
+                        if (x >= left && x <= right && y >= top && y <= bottom) {
+                            val className = labels[classes[index].toInt()]
+                            val scoreText = String.format("%.2f", score * 100)
+
+                            // Exibir informações no log
+                            Log.d("BoundingBoxClick", "Classe: $className, Score: $scoreText%")
+
+                            // Aqui você pode fazer outra ação, como exibir um Toast
+                            // Toast.makeText(this, "Classe: $className, Score: $scoreText%", Toast.LENGTH_SHORT).show()
+
+                            isClickedOnBox = true
+                        }
+                    }
+                }
+
+                if (!isClickedOnBox) {
+                    Log.d("BoundingBoxClick", "Clique fora de qualquer bounding box.")
+                }
+            }
+            true
+        }
+
+
         textureView.surfaceTextureListener = object:TextureView.SurfaceTextureListener{
             override fun onSurfaceTextureAvailable(
                 surface: SurfaceTexture,
@@ -76,10 +152,50 @@ class MainActivity : AppCompatActivity() {
             override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
                 bitmap = textureView.bitmap!!
 
+
+
+                val image = TensorImage.fromBitmap(bitmap)
+
+                val outputs = model.process(image)
+
+                locations = outputs.locationAsTensorBuffer.floatArray
+                classes = outputs.categoryAsTensorBuffer.floatArray
+                scores = outputs.scoreAsTensorBuffer.floatArray
+                var numberOfDetections = outputs.numberOfDetectionsAsTensorBuffer.floatArray
+
+                var mutable = bitmap.copy(Bitmap.Config.ARGB_8888, true)
+                val canvas = Canvas(mutable)
+
+                val h = mutable.height
+                val w = mutable.width
+                paint.textSize = h/15f
+                paint.strokeWidth = h/85f
+                var x = 0
+                scores.forEachIndexed { index, fl ->
+                    x = index
+                    x *= 4
+                    if(fl > 0.5){
+                        paint.setColor(colors.get(index))
+                        paint.style = Paint.Style.STROKE
+                        canvas.drawRect(RectF(locations.get(x+1)*w, locations.get(x)*h, locations.get(x+3)*w, locations.get(x+2)*h), paint)
+                        paint.style = Paint.Style.FILL
+                        canvas.drawText(labels.get(classes.get(index).toInt())+" "+fl.toString(), locations.get(x+1)*w, locations.get(x)*h, paint)
+                    }
+                }
+
+                imageView.setImageBitmap(mutable)
+
+
+
             }
 
         }
         cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        model.close()
     }
 
     @SuppressLint("MissingPermission")
