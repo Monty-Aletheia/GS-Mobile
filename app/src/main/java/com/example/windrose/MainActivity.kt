@@ -55,10 +55,20 @@ class MainActivity : AppCompatActivity() {
     private var locations: FloatArray = floatArrayOf()
     private var classes: FloatArray = floatArrayOf()
 
-    private var detectionList: List<String> = listOf("refrigerator", "bottle", "clock", "person")
-    private val allowedDetectionsMap = mapOf("refrigerator" to "Geladeira", "bottle" to "Garrafa", "clock" to "Relógio", "Person" to "Pessoa")
 
-    fun normalizeItemName(itemName: String) = allowedDetectionsMap[itemName] ?: "Nulo"
+    private val allowedDetectionsMap = mapOf(
+        "tv" to "Televisor",
+        "laptop" to "Notebook",
+        "cell_phone" to "Celular",
+        "microwave" to "Micro-ondas",
+        "oven" to "Forno",
+        "toaster" to "Torradeira",
+        "refrigerator" to "Geladeira",
+        "clock" to "Relógio",
+        "hair_drier" to "Secador de Cabelo",
+    )
+
+    private fun normalizeItemName(itemName: String) = allowedDetectionsMap[itemName]!!
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -112,14 +122,10 @@ class MainActivity : AppCompatActivity() {
                             val className = labels[classes[index].toInt()]
                             val scoreText = String.format("%.2f", score * 100)
 
-                            // Exibir informações no log
-                            Log.d("BoundingBoxClick", "Classe: $className, Score: $scoreText%")
+
                             if (className in allowedDetectionsMap){
                                 showBottomSheetDialog(normalizeItemName(className))
                             }
-
-                            // Aqui você pode fazer outra ação, como exibir um Toast
-                            // Toast.makeText(this, "Classe: $className, Score: $scoreText%", Toast.LENGTH_SHORT).show()
 
                             isClickedOnBox = true
 
@@ -205,7 +211,6 @@ class MainActivity : AppCompatActivity() {
 
                 imageView.setImageBitmap(mutable)
 
-
             }
 
         }
@@ -221,6 +226,14 @@ class MainActivity : AppCompatActivity() {
         val sheetBinding: CustomBottomSheetBinding = CustomBottomSheetBinding
             .inflate(layoutInflater, null, false)
         sheetBinding.itemName.text = itemName
+        sheetBinding.buttonCancelar.setOnClickListener{
+            dialog.dismiss()
+
+        }
+        sheetBinding.buttonConfirmar.setOnClickListener {
+
+        }
+
         dialog.setContentView(sheetBinding.root)
         dialog.show()
     }

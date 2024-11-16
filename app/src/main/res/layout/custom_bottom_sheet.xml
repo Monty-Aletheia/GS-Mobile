@@ -28,21 +28,24 @@
         />
 
     <Button
+        android:id="@+id/buttonConfirmar"
         android:layout_marginTop="20dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_button"
         app:backgroundTint="@null"
+        android:textColor="@color/white"
         android:text="Confirmar"
         />
 
     <Button
+        android:id="@+id/buttonCancelar"
         android:layout_marginTop="20dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_button"
         app:backgroundTint="@null"
-
+        android:textColor="@color/white"
         android:text="Cancelar"
         />
 
