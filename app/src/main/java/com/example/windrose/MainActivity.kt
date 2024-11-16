@@ -12,7 +12,6 @@ import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
-import android.media.Image
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
@@ -26,22 +25,21 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.windrose.databinding.ActivityMainBinding
+import com.example.windrose.databinding.CustomBottomSheetBinding
 import com.example.windrose.ml.AutoModel2
-
-import org.tensorflow.lite.DataType
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import org.tensorflow.lite.support.common.FileUtil
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.ResizeOp
-import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
-import java.nio.ByteBuffer
 
 class MainActivity : AppCompatActivity() {
     val paint = Paint()
-    lateinit var labels:List<String>
+    lateinit var labels: List<String>
     var colors = listOf<Int>(
         Color.BLUE, Color.GREEN, Color.RED, Color.CYAN, Color.GRAY, Color.BLACK,
-        Color.DKGRAY, Color.MAGENTA, Color.YELLOW, Color.RED)
+        Color.DKGRAY, Color.MAGENTA, Color.YELLOW, Color.RED
+    )
     lateinit var imageProcessor: ImageProcessor
     private lateinit var binding: ActivityMainBinding
     lateinit var bitmap: Bitmap
@@ -57,6 +55,10 @@ class MainActivity : AppCompatActivity() {
     private var locations: FloatArray = floatArrayOf()
     private var classes: FloatArray = floatArrayOf()
 
+    private var detectionList: List<String> = listOf("refrigerator", "bottle", "clock", "person")
+    private val allowedDetectionsMap = mapOf("refrigerator" to "Geladeira", "bottle" to "Garrafa", "clock" to "Relógio", "Person" to "Pessoa")
+
+    fun normalizeItemName(itemName: String) = allowedDetectionsMap[itemName] ?: "Nulo"
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,7 +77,8 @@ class MainActivity : AppCompatActivity() {
         getPermission()
 
         labels = FileUtil.loadLabels(this, "labels.txt")
-        imageProcessor = ImageProcessor.Builder().add(ResizeOp(300,300,ResizeOp.ResizeMethod.BILINEAR)).build()
+        imageProcessor =
+            ImageProcessor.Builder().add(ResizeOp(300, 300, ResizeOp.ResizeMethod.BILINEAR)).build()
 
         model = AutoModel2.newInstance(this)
 
@@ -111,11 +114,15 @@ class MainActivity : AppCompatActivity() {
 
                             // Exibir informações no log
                             Log.d("BoundingBoxClick", "Classe: $className, Score: $scoreText%")
+                            if (className in allowedDetectionsMap){
+                                showBottomSheetDialog(normalizeItemName(className))
+                            }
 
                             // Aqui você pode fazer outra ação, como exibir um Toast
                             // Toast.makeText(this, "Classe: $className, Score: $scoreText%", Toast.LENGTH_SHORT).show()
 
                             isClickedOnBox = true
+
                         }
                     }
                 }
@@ -128,7 +135,7 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        textureView.surfaceTextureListener = object:TextureView.SurfaceTextureListener{
+        textureView.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
             override fun onSurfaceTextureAvailable(
                 surface: SurfaceTexture,
                 width: Int,
@@ -153,7 +160,6 @@ class MainActivity : AppCompatActivity() {
                 bitmap = textureView.bitmap!!
 
 
-
                 val image = TensorImage.fromBitmap(bitmap)
 
                 val outputs = model.process(image)
@@ -168,29 +174,55 @@ class MainActivity : AppCompatActivity() {
 
                 val h = mutable.height
                 val w = mutable.width
-                paint.textSize = h/15f
-                paint.strokeWidth = h/85f
+                paint.textSize = h / 15f
+                paint.strokeWidth = h / 85f
                 var x = 0
                 scores.forEachIndexed { index, fl ->
                     x = index
                     x *= 4
-                    if(fl > 0.5){
+                    if (fl > 0.5) {
                         paint.setColor(colors.get(index))
                         paint.style = Paint.Style.STROKE
-                        canvas.drawRect(RectF(locations.get(x+1)*w, locations.get(x)*h, locations.get(x+3)*w, locations.get(x+2)*h), paint)
+                        canvas.drawRect(
+                            RectF(
+                                locations.get(x + 1) * w,
+                                locations.get(x) * h,
+                                locations.get(x + 3) * w,
+                                locations.get(x + 2) * h
+                            ), paint
+                        )
                         paint.style = Paint.Style.FILL
-                        canvas.drawText(labels.get(classes.get(index).toInt())+" "+fl.toString(), locations.get(x+1)*w, locations.get(x)*h, paint)
+                        canvas.drawText(
+                            labels.get(
+                                classes.get(index).toInt()
+                            ) + " " + fl.toString(),
+                            locations.get(x + 1) * w,
+                            locations.get(x) * h,
+                            paint
+                        )
                     }
                 }
 
                 imageView.setImageBitmap(mutable)
 
 
-
             }
 
         }
         cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+
+
+
+    }
+
+    private fun showBottomSheetDialog(itemName: String){
+        val dialog = BottomSheetDialog(this)
+
+        val sheetBinding: CustomBottomSheetBinding = CustomBottomSheetBinding
+            .inflate(layoutInflater, null, false)
+        sheetBinding.itemName.text = itemName
+        dialog.setContentView(sheetBinding.root)
+        dialog.show()
     }
 
     override fun onDestroy() {
@@ -199,39 +231,52 @@ class MainActivity : AppCompatActivity() {
     }
 
     @SuppressLint("MissingPermission")
-    fun openCamera(){
-        cameraManager.openCamera(cameraManager.cameraIdList[0], object:CameraDevice.StateCallback(){
-            override fun onOpened(camera: CameraDevice) {
-                cameraDevice = camera
-                var surfaceTexture = textureView.surfaceTexture
-                var surface = Surface(surfaceTexture)
-                var captureRequest = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
-                captureRequest.addTarget(surface)
+    fun openCamera() {
+        cameraManager.openCamera(
+            cameraManager.cameraIdList[0],
+            object : CameraDevice.StateCallback() {
+                override fun onOpened(camera: CameraDevice) {
+                    cameraDevice = camera
+                    var surfaceTexture = textureView.surfaceTexture
+                    var surface = Surface(surfaceTexture)
+                    var captureRequest =
+                        cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+                    captureRequest.addTarget(surface)
 
-                cameraDevice.createCaptureSession(listOf(surface), object: CameraCaptureSession.StateCallback(){
-                    override fun onConfigured(session: CameraCaptureSession) {
-                        session.setRepeatingRequest(captureRequest.build(), null, null)
-                    }
+                    cameraDevice.createCaptureSession(
+                        listOf(surface),
+                        object : CameraCaptureSession.StateCallback() {
+                            override fun onConfigured(session: CameraCaptureSession) {
+                                session.setRepeatingRequest(captureRequest.build(), null, null)
+                            }
 
-                    override fun onConfigureFailed(session: CameraCaptureSession) {
+                            override fun onConfigureFailed(session: CameraCaptureSession) {
 
-                    }
-                }, handler)
-            }
+                            }
+                        },
+                        handler
+                    )
+                }
 
-            override fun onDisconnected(camera: CameraDevice) {
+                override fun onDisconnected(camera: CameraDevice) {
 
-            }
+                }
 
-            override fun onError(camera: CameraDevice, error: Int) {
+                override fun onError(camera: CameraDevice, error: Int) {
 
-            }
+                }
 
-        }, handler)
+            },
+            handler
+        )
     }
 
-    fun getPermission(){
-        if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+    fun getPermission() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.CAMERA
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             requestPermissions(arrayOf(android.Manifest.permission.CAMERA), 101)
         }
     }
@@ -242,7 +287,7 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if(grantResults[0] != PackageManager.PERMISSION_GRANTED){
+        if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
             getPermission()
         }
     }
