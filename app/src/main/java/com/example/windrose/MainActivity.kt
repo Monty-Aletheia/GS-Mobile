@@ -19,6 +19,7 @@ import android.util.Log
 import android.view.Surface
 import android.view.TextureView
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -55,20 +56,18 @@ class MainActivity : AppCompatActivity() {
     private var locations: FloatArray = floatArrayOf()
     private var classes: FloatArray = floatArrayOf()
 
-
-    private val allowedDetectionsMap = mapOf(
-        "tv" to "Televisor",
-        "laptop" to "Notebook",
-        "cell_phone" to "Celular",
-        "microwave" to "Micro-ondas",
-        "oven" to "Forno",
-        "toaster" to "Torradeira",
-        "refrigerator" to "Geladeira",
-        "clock" to "Relógio",
-        "hair_drier" to "Secador de Cabelo",
-    )
-
-    private fun normalizeItemName(itemName: String) = allowedDetectionsMap[itemName]!!
+    private val allowedDetectionsList: List<String> =
+        listOf(
+            "Televisão",
+            "Notebook",
+            "Celular",
+            "Micro-ondas",
+            "Fogão",
+            "Torradeira",
+            "Geladeira",
+            "Relógio",
+            "Secador de Cabelo"
+        )
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -123,8 +122,16 @@ class MainActivity : AppCompatActivity() {
                             val scoreText = String.format("%.2f", score * 100)
 
 
-                            if (className in allowedDetectionsMap){
-                                showBottomSheetDialog(normalizeItemName(className))
+                            if (className in allowedDetectionsList) {
+                                showBottomSheetDialog(className)
+                            } else {
+                                Toast.makeText(
+                                    this,
+                                    """
+                                        Por favor, clique em um eletrodoméstico.
+                                    """.trimIndent(),
+                                    Toast.LENGTH_LONG
+                                ).show()
                             }
 
                             isClickedOnBox = true
@@ -201,7 +208,9 @@ class MainActivity : AppCompatActivity() {
                         canvas.drawText(
                             labels.get(
                                 classes.get(index).toInt()
-                            ) + " " + fl.toString(),
+
+                            )
+                                    + " " + fl.toString(),
                             locations.get(x + 1) * w,
                             locations.get(x) * h,
                             paint
@@ -217,18 +226,16 @@ class MainActivity : AppCompatActivity() {
         cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
 
 
-
     }
 
-    private fun showBottomSheetDialog(itemName: String){
+    private fun showBottomSheetDialog(itemName: String) {
         val dialog = BottomSheetDialog(this)
 
         val sheetBinding: CustomBottomSheetBinding = CustomBottomSheetBinding
             .inflate(layoutInflater, null, false)
         sheetBinding.itemName.text = itemName
-        sheetBinding.buttonCancelar.setOnClickListener{
+        sheetBinding.buttonCancelar.setOnClickListener {
             dialog.dismiss()
-
         }
         sheetBinding.buttonConfirmar.setOnClickListener {
 
