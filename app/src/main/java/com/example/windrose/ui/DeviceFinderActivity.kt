@@ -1,4 +1,4 @@
-package com.example.windrose
+package com.example.windrose.ui
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -26,10 +26,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
+import com.example.windrose.R
 import com.example.windrose.databinding.ActivityDeviceFinderBinding
-import com.example.windrose.databinding.ActivityMainBinding
 import com.example.windrose.databinding.CustomBottomSheetBinding
 import com.example.windrose.ml.AutoModel2
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -37,7 +36,6 @@ import org.tensorflow.lite.support.common.FileUtil
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.ResizeOp
-import kotlin.io.encoding.Base64
 
 class DeviceFinderActivity : AppCompatActivity() {
 

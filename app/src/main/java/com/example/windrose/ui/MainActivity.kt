@@ -1,4 +1,4 @@
-package com.example.windrose
+package com.example.windrose.ui
 
 import android.content.Intent
 import android.os.Bundle

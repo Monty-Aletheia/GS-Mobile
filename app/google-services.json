@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "621972860271",
+    "project_id": "windrose-38a16",
+    "storage_bucket": "windrose-38a16.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:621972860271:android:a540cec34a1de25c650c9a",
+        "android_client_info": {
+          "package_name": "com.example.windrose"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8wXBcaghuyuH0y-MGHdxAFaE8XM0Zixc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

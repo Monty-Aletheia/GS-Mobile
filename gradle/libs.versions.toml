@@ -14,8 +14,13 @@ navVersion = "2.8.2"
 tensorflowLiteMetadata = "0.1.0"
 tensorflowLiteGpu = "2.3.0"
 cardview = "1.0.0"
+gms = "4.4.2"
+retrofit = "2.11.0"
+firebase = "33.5.1"
 
 [libraries]
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase" }
+firebase-auth = { module = "com.google.firebase:firebase-auth" }
 androidx-navigation-ui = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navVersion" }
 androidx-navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -30,8 +35,13 @@ tensorflow-lite-support = { group = "org.tensorflow", name = "tensorflow-lite-su
 tensorflow-lite-metadata = { group = "org.tensorflow", name = "tensorflow-lite-metadata", version.ref = "tensorflowLiteMetadata" }
 tensorflow-lite-gpu = { group = "org.tensorflow", name = "tensorflow-lite-gpu", version.ref = "tensorflowLiteGpu" }
 androidx-cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit"}
+retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit"}
+
+
 
 [plugins]
+gms-google-services = { id = "com.google.gms.google-services", version.ref = "gms" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 
