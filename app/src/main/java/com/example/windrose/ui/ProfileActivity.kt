@@ -11,11 +11,13 @@ import androidx.navigation.findNavController
 import com.example.windrose.R
 import com.example.windrose.databinding.ActivityMainBinding
 import com.example.windrose.databinding.ActivityProfileBinding
+import com.example.windrose.utils.CustomPercentFormatter
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
+import com.github.mikephil.charting.formatter.PercentFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -63,20 +65,21 @@ class ProfileActivity : AppCompatActivity() {
     private fun setPieChartConfig() {
         val list: ArrayList<PieEntry> = ArrayList()
 
-    list.add(PieEntry(100f, "Geladeira"))
-        list.add(PieEntry(101f, "Fogão"))
-        list.add(PieEntry(102f, "Micro-ondas"))
-        list.add(PieEntry(103f, "Tv"))
-        list.add(PieEntry(107f, "Torradeira"))
+
+        list.add(PieEntry(50f, "Geladeira"))
+        list.add(PieEntry(20f, "Fogão"))
+        list.add(PieEntry(20f, "Micro-ondas"))
+        list.add(PieEntry(5f, "Tv"))
+        list.add(PieEntry(5f, "Torradeira"))
 
         val pieDataSet = PieDataSet(list, "")
 
         val colors = arrayListOf(
-            Color.parseColor("#4CAF50"), // Verde (ex: Geladeira)
-            Color.parseColor("#FFEB3B"), // Amarelo (ex: Microondas)
-            Color.parseColor("#FF9800"), // Laranja (ex: Televisão)
-            Color.parseColor("#F44336"), // Vermelho (ex: Fogão)
-            Color.parseColor("#00BCD4")  // Azul (ex: Outros)
+            Color.parseColor("#4CAF50"),
+            Color.parseColor("#FFEB3B"),
+            Color.parseColor("#FF9800"),
+            Color.parseColor("#F44336"),
+            Color.parseColor("#00BCD4")
         )
 
         pieDataSet.colors = colors
@@ -85,10 +88,13 @@ class ProfileActivity : AppCompatActivity() {
 
         pieDataSet.valueTextColor = Color.WHITE
 
+        pieDataSet.valueFormatter = CustomPercentFormatter()
+
 
         val pieData = PieData(pieDataSet)
 
         pieChart.data = pieData
+
 
         pieChart.description.text = ""
 
