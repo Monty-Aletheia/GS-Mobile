@@ -1,5 +1,6 @@
 package com.example.windrose.ui
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
@@ -8,6 +9,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.findNavController
 import com.example.windrose.R
+import com.example.windrose.databinding.ActivityMainBinding
 import com.example.windrose.databinding.ActivityProfileBinding
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.components.Legend
@@ -38,15 +40,17 @@ class ProfileActivity : AppCompatActivity() {
             insets
         }
 
-        binding.profileNameTextView.text = "Olá ${auth.currentUser!!.displayName.toString()}"
+        val username: String = auth.currentUser!!.displayName.toString().split(" ")[0]
+        binding.profileNameTextView.text = "Olá ${username}"
 
-        binding.imageView3.setOnClickListener{
+        binding.signOutImageView.setOnClickListener{
             auth.signOut()
-            findNavController(R.id.fragmentContainerView).navigate(R.id.loginFragment)
+            startActivity(Intent(this, MainActivity::class.java))
         }
 
         binding.buttonToYourDevices.setOnClickListener{
-
+            val intent = Intent(this, DeviceListActivity::class.java)
+            startActivity(intent)
         }
 
         setPieChartConfig()
@@ -59,7 +63,7 @@ class ProfileActivity : AppCompatActivity() {
     private fun setPieChartConfig() {
         val list: ArrayList<PieEntry> = ArrayList()
 
-        list.add(PieEntry(100f, "Geladeira"))
+    list.add(PieEntry(100f, "Geladeira"))
         list.add(PieEntry(101f, "Fogão"))
         list.add(PieEntry(102f, "Micro-ondas"))
         list.add(PieEntry(103f, "Tv"))
@@ -77,10 +81,10 @@ class ProfileActivity : AppCompatActivity() {
 
         pieDataSet.colors = colors
 
-        pieDataSet.valueTextSize = 10f
+        pieDataSet.valueTextSize = 14f
 
+        pieDataSet.valueTextColor = Color.WHITE
 
-        pieDataSet.valueTextColor = Color.BLACK
 
         val pieData = PieData(pieDataSet)
 
@@ -97,8 +101,9 @@ class ProfileActivity : AppCompatActivity() {
         pieChart.legend.verticalAlignment = Legend.LegendVerticalAlignment.CENTER
         pieChart.legend.horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
 
-        pieChart.setEntryLabelTextSize(7f)
+        pieChart.legend.textSize = 16f
 
+        pieChart.setDrawEntryLabels(false)
 
         pieChart.invalidate()
     }

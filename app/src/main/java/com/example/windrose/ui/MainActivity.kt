@@ -16,13 +16,5 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val button = binding.startDeviceFinderButton
-
-        val intent = Intent(this, DeviceFinderActivity::class.java)
-
-        button.setOnClickListener {
-            startActivity(intent)
-        }
     }
-
 }

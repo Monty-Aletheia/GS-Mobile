@@ -29,7 +29,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doOnTextChanged
 import com.example.windrose.R
 import com.example.windrose.databinding.ActivityDeviceFinderBinding
-import com.example.windrose.databinding.CustomBottomSheetBinding
+import com.example.windrose.databinding.EnterDeviceBottomSheetBinding
 import com.example.windrose.ml.AutoModel2
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import org.tensorflow.lite.support.common.FileUtil
@@ -107,7 +107,6 @@ class DeviceFinderActivity : AppCompatActivity() {
                 val x = event.x
                 val y = event.y
 
-                // Verifica se o toque está dentro de alguma bounding box
                 val h = bitmap.height
                 val w = bitmap.width
                 var isClickedOnBox = false
@@ -120,7 +119,6 @@ class DeviceFinderActivity : AppCompatActivity() {
                         val bottom = locations[boxIndex + 2] * h
                         val right = locations[boxIndex + 3] * w
 
-                        // Verifica se o clique está dentro das coordenadas da bounding box
                         if (x >= left && x <= right && y >= top && y <= bottom) {
                             val className = labels[classes[index].toInt()]
 
@@ -221,14 +219,13 @@ class DeviceFinderActivity : AppCompatActivity() {
 
         }
         cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
-
     }
 
     private fun showBottomSheetDialog(itemName: String) {
         val dialog = BottomSheetDialog(this)
 
-        val sheetBinding: CustomBottomSheetBinding =
-            CustomBottomSheetBinding
+        val sheetBinding: EnterDeviceBottomSheetBinding =
+            EnterDeviceBottomSheetBinding
                 .inflate(layoutInflater, null, false)
 
         sheetBinding.itemName.text = itemName
@@ -245,9 +242,7 @@ class DeviceFinderActivity : AppCompatActivity() {
         }
 
         confirmButton.setOnClickListener {
-            val intent = Intent(this@DeviceFinderActivity, DeviceDetailsActivity::class.java)
-            intent.putExtra("name", itemName)
-            startActivity(intent)
+            startActivity(Intent(this, DeviceFinderActivity::class.java))
         }
         cancelButton.setOnClickListener { dialog.dismiss() }
 

@@ -3,9 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
+    android:padding="10dp"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.DeviceDetailsActivity">
+    android:layout_height="wrap_content"
+    tools:context=".ui.DeviceDetailsActivity"
+    android:background="@drawable/bg_device_details_dialog"
+
+    >
 
     <TextView
         android:id="@+id/deviceNameTextView"
@@ -96,17 +100,21 @@
         app:cardCornerRadius="20dp"
         android:layout_width="0dp"
         android:layout_marginTop="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="40dp"
         android:layout_height="wrap_content"
         app:cardElevation="8dp"
         app:layout_constraintEnd_toEndOf="@id/diaryUsageCardView"
         app:layout_constraintStart_toStartOf="@id/diaryUsageCardView"
         app:layout_constraintTop_toBottomOf="@id/diaryUsageCardView"
+
         >
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/statisticsCardViewConstraintLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="20dp"
+
             >
             <TextView
                 android:id="@+id/wattageNameTextView"

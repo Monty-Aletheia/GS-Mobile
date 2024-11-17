@@ -52,6 +52,14 @@ class LoginFragment : Fragment() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        if(auth.currentUser != null){
+            val intent = Intent(requireContext(), ProfileActivity::class.java)
+            startActivity(intent)
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         binding.loginEmailEditText.text.clear()
