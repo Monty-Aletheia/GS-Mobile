@@ -45,6 +45,10 @@ class ProfileActivity : AppCompatActivity() {
             findNavController(R.id.fragmentContainerView).navigate(R.id.loginFragment)
         }
 
+        binding.buttonToYourDevices.setOnClickListener{
+
+        }
+
         setPieChartConfig()
 
 
