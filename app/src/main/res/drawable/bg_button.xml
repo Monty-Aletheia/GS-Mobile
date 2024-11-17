@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle"
-    >
-    <solid android:color="#112302"/>
-    <corners android:radius="100in"/>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Estado desabilitado -->
+    <item android:state_enabled="false">
+        <shape android:shape="rectangle">
+            <solid android:color="#CCCCCC" /> <!-- Cor mais clara ou mais transparente -->
+            <corners android:radius="100in" />
+        </shape>
+    </item>
+    <!-- Estado habilitado -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#112302" /> <!-- Cor original -->
+            <corners android:radius="100in" />
+        </shape>
+    </item>
+</selector>
 
-</shape>
+

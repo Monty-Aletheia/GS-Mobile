@@ -30,11 +30,16 @@
         />
 
     <EditText
+        android:id="@+id/diaryUsageEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Uso diário em horas"
-        android:textColorHint="@color/white"
-
+        android:background="@drawable/bg_edit_text"
+        android:layout_marginTop="20sp"
+        android:hint="Insira o uso diário em horas"
+        android:textColorHint="#646464"
+        android:textColor="@color/black"
+        android:padding="14dp"
+        android:inputType="number"
         />
 
 

@@ -2,6 +2,7 @@ package com.example.windrose
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -25,6 +26,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
+import androidx.core.widget.doOnTextChanged
 import com.example.windrose.databinding.ActivityDeviceFinderBinding
 import com.example.windrose.databinding.ActivityMainBinding
 import com.example.windrose.databinding.CustomBottomSheetBinding
@@ -34,6 +37,7 @@ import org.tensorflow.lite.support.common.FileUtil
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.ResizeOp
+import kotlin.io.encoding.Base64
 
 class DeviceFinderActivity : AppCompatActivity() {
 
@@ -187,7 +191,7 @@ class DeviceFinderActivity : AppCompatActivity() {
                 scores.forEachIndexed { index, fl ->
                     x = index
                     x *= 4
-                    Log.i("MODELO", "AQUI")
+
                     if (fl > 0.5) {
                         paint.setColor(colors.get(index))
                         paint.style = Paint.Style.STROKE
@@ -230,9 +234,23 @@ class DeviceFinderActivity : AppCompatActivity() {
                 .inflate(layoutInflater, null, false)
 
         sheetBinding.itemName.text = itemName
-        val cancelButton = sheetBinding.cancelButton
-        val confirmButton = sheetBinding.confirmButton
 
+        val diaryUsageInput = sheetBinding.diaryUsageEditText
+
+        val cancelButton = sheetBinding.cancelButton
+
+        val confirmButton = sheetBinding.confirmButton
+        confirmButton.isEnabled = false
+
+        diaryUsageInput.doOnTextChanged { text, _, _, _ ->
+            confirmButton.isEnabled = !text.isNullOrEmpty()
+        }
+
+        confirmButton.setOnClickListener {
+            val intent = Intent(this@DeviceFinderActivity, DeviceDetailsActivity::class.java)
+            intent.putExtra("name", itemName)
+            startActivity(intent)
+        }
         cancelButton.setOnClickListener { dialog.dismiss() }
 
         dialog.setContentView(sheetBinding.root)
