@@ -43,6 +43,8 @@ android {
 
 dependencies {
 
+
+
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
     implementation(libs.androidx.navigation.ui)
@@ -61,4 +63,5 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
+    implementation (libs.philjay.mpandroidchart)
 }
