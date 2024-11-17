@@ -8,6 +8,8 @@
     android:padding="32dp"
     android:background="@drawable/bg_custom_dialog">
 
+
+
     <TextView
         android:id="@+id/itemName"
         android:layout_width="match_parent"
@@ -27,8 +29,17 @@
         android:textColor="@color/white"
         />
 
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Uso diário em horas"
+        android:textColorHint="@color/white"
+
+        />
+
+
     <Button
-        android:id="@+id/buttonConfirmar"
+        android:id="@+id/confirmButton"
         android:layout_marginTop="20dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -39,7 +50,7 @@
         />
 
     <Button
-        android:id="@+id/buttonCancelar"
+        android:id="@+id/cancelButton"
         android:layout_marginTop="20dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
