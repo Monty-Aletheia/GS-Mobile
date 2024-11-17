@@ -9,6 +9,23 @@ import retrofit2.http.POST
 
 const val URL = "http://192.168.0.181:8080/api/"
 
+
+
+data class UserDeviceResponseDTO(
+    val devices: List<DeviceDTO>
+)
+
+data class DeviceDTO(
+    val id: String,
+    val name: String,
+    val category: String,
+    val model: String,
+    val powerRating: Double,
+    val estimatedUsageHours: Double
+
+)
+
+
 data class UserResponse(
     val message: String,
     val user: User,
