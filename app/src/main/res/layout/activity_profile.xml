@@ -5,26 +5,31 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.ProfileActivity">
+    tools:context=".ui.ProfileActivity"
+    android:padding="14dp">
 
     <TextView
         android:id="@+id/profileNameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="45dp"
         android:fontFamily="@font/fredoka"
-        android:textSize="20dp"
+        android:textSize="26sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="TextView" />
+        tools:text="TextView"
+
+        />
 
     <ImageView
         android:id="@+id/editPencil"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        app:layout_constraintBottom_toBottomOf="@+id/profileNameTextView"
-        app:layout_constraintStart_toEndOf="@+id/profileNameTextView"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="10sp"
+        app:layout_constraintTop_toTopOf="@id/profileNameTextView"
+        app:layout_constraintBottom_toBottomOf="@id/profileNameTextView"
+        app:layout_constraintStart_toEndOf="@id/profileNameTextView"
         app:srcCompat="@drawable/edit_pencil" />
 
 
@@ -32,20 +37,23 @@
         android:id="@+id/logoutCardView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="35dp"
         android:layout_marginEnd="20dp"
         app:cardCornerRadius="200dp"
         app:cardElevation="8dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="@id/editPencil"
+        app:layout_constraintBottom_toBottomOf="@id/editPencil"
+        >
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/logoutCardViewContraintLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="10dp">
+            android:padding="10dp"
+            >
 
             <ImageView
-                android:id="@+id/imageView3"
+                android:id="@+id/signOutImageView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_constraintBottom_toBottomOf="@id/logoutCardViewContraintLayout"
@@ -62,11 +70,11 @@
         android:id="@+id/pieChartTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Resumo geral"
-        android:fontFamily="@font/fredoka"
         android:layout_marginStart="40dp"
-        android:textSize="16sp"
         android:layout_marginBottom="10dp"
+        android:fontFamily="@font/fredoka"
+        android:text="Resumo geral"
+        android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@+id/pieCardView"
         app:layout_constraintStart_toStartOf="@+id/pieCardView" />
 
@@ -102,15 +110,14 @@
     </androidx.cardview.widget.CardView>
 
 
-
     <TextView
         android:id="@+id/totalSectionTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Total"
-        android:layout_marginBottom="10dp"
         android:layout_marginStart="40dp"
+        android:layout_marginBottom="10dp"
         android:fontFamily="@font/fredoka"
+        android:text="Total"
         android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@+id/totalSectionCardView"
         app:layout_constraintStart_toStartOf="@+id/totalSectionCardView" />
@@ -123,9 +130,10 @@
         android:layout_marginTop="60dp"
         app:cardCornerRadius="35dp"
         app:cardElevation="8dp"
-        app:layout_constraintStart_toStartOf="@id/pieCardView"
         app:layout_constraintEnd_toEndOf="@id/pieCardView"
+        app:layout_constraintStart_toStartOf="@id/pieCardView"
         app:layout_constraintTop_toBottomOf="@id/pieCardView">
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/totalSectionContraintLayoutCardView"
             android:layout_width="match_parent"
@@ -137,9 +145,9 @@
                 android:id="@+id/titleDailyWasteTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Gasto Diário:"
                 android:layout_margin="15dp"
                 android:fontFamily="@font/fredoka"
+                android:text="Gasto Diário:"
                 android:textSize="18sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -161,10 +169,10 @@
                 android:id="@+id/dailyWasteWattTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="2dp"
                 android:fontFamily="@font/fredoka"
                 android:text="53,43"
                 android:textColor="#0A7600"
-                android:layout_marginEnd="2dp"
                 android:textSize="18sp"
                 app:layout_constraintEnd_toStartOf="@+id/wattDayTextView"
                 app:layout_constraintTop_toTopOf="@+id/titleDailyWasteTextView" />
@@ -173,10 +181,10 @@
                 android:id="@+id/wattDayTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/fredoka"
                 android:layout_marginEnd="10dp"
-                android:textSize="12sp"
+                android:fontFamily="@font/fredoka"
                 android:text="W/d"
+                android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="@+id/dailyWasteWattTextView"
                 app:layout_constraintEnd_toEndOf="parent" />
 
@@ -196,8 +204,8 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/fredoka"
                 android:text="143,87"
-                android:textSize="18sp"
                 android:textColor="#0A7600"
+                android:textSize="18sp"
                 app:layout_constraintEnd_toStartOf="@+id/wattMonthTextView"
                 app:layout_constraintTop_toTopOf="@+id/titleMonthWasteTextView" />
 
@@ -206,16 +214,16 @@
     </androidx.cardview.widget.CardView>
 
 
-
     <androidx.cardview.widget.CardView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
         app:cardCornerRadius="35dp"
         app:cardElevation="8dp"
-        app:layout_constraintStart_toStartOf="@id/totalSectionCardView"
         app:layout_constraintEnd_toEndOf="@id/totalSectionCardView"
+        app:layout_constraintStart_toStartOf="@id/totalSectionCardView"
         app:layout_constraintTop_toBottomOf="@id/totalSectionCardView">
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -246,7 +254,6 @@
                 app:srcCompat="@drawable/arrow_right_to_line_svgrepo_com_2" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
-
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

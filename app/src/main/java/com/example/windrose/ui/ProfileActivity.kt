@@ -9,6 +9,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.findNavController
 import com.example.windrose.R
+import com.example.windrose.databinding.ActivityMainBinding
 import com.example.windrose.databinding.ActivityProfileBinding
 import com.example.windrose.utils.CustomPercentFormatter
 import com.github.mikephil.charting.charts.PieChart
@@ -41,11 +42,12 @@ class ProfileActivity : AppCompatActivity() {
             insets
         }
 
-        binding.profileNameTextView.text = "Olá ${auth.currentUser!!.displayName.toString()}"
+        val username: String = auth.currentUser!!.displayName.toString().split(" ")[0]
+        binding.profileNameTextView.text = "Olá ${username}"
 
-        binding.imageView3.setOnClickListener{
+        binding.signOutImageView.setOnClickListener{
             auth.signOut()
-            findNavController(R.id.fragmentContainerView).navigate(R.id.loginFragment)
+            startActivity(Intent(this, MainActivity::class.java))
         }
 
         binding.buttonToYourDevices.setOnClickListener{
@@ -62,6 +64,7 @@ class ProfileActivity : AppCompatActivity() {
 
     private fun setPieChartConfig() {
         val list: ArrayList<PieEntry> = ArrayList()
+
 
         list.add(PieEntry(50f, "Geladeira"))
         list.add(PieEntry(20f, "Fogão"))
@@ -81,9 +84,9 @@ class ProfileActivity : AppCompatActivity() {
 
         pieDataSet.colors = colors
 
-        pieDataSet.valueTextSize = 10f
+        pieDataSet.valueTextSize = 14f
 
-        pieDataSet.valueTextColor = Color.BLACK
+        pieDataSet.valueTextColor = Color.WHITE
 
         pieDataSet.valueFormatter = CustomPercentFormatter()
 
@@ -104,8 +107,9 @@ class ProfileActivity : AppCompatActivity() {
         pieChart.legend.verticalAlignment = Legend.LegendVerticalAlignment.CENTER
         pieChart.legend.horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
 
-        pieChart.setEntryLabelTextSize(7f)
+        pieChart.legend.textSize = 16f
 
+        pieChart.setDrawEntryLabels(false)
 
         pieChart.invalidate()
     }

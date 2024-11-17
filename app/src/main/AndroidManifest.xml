@@ -28,9 +28,6 @@
             android:name=".ui.ProfileActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.DeviceDetailsActivity"
-            android:exported="false" />
-        <activity
             android:name=".ui.DeviceFinderActivity"
             android:exported="false" />
         <activity
