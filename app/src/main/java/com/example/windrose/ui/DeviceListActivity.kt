@@ -10,8 +10,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.windrose.R
 import com.example.windrose.adapter.DeviceAdapter
 import com.example.windrose.databinding.ActivityDeviceListBinding
+import com.example.windrose.databinding.DeviceDetailsBottomSheetBinding
 import com.example.windrose.network.DeviceDTO
-import com.example.windrose.network.UserDeviceResponseDTO
+import com.google.android.material.bottomsheet.BottomSheetDialog
 
 class DeviceListActivity : AppCompatActivity() {
     private lateinit var binding: ActivityDeviceListBinding;
@@ -30,6 +31,9 @@ class DeviceListActivity : AppCompatActivity() {
         binding.floatingActionButton.setOnClickListener{
             val intent = Intent(this, DeviceFinderActivity::class.java)
             startActivity(intent)
+        }
+        binding.backArrowImageView.setOnClickListener{
+            super.finish()
         }
 
 
@@ -56,9 +60,29 @@ class DeviceListActivity : AppCompatActivity() {
 
         val recyclerView = binding.recyclerView
         recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = DeviceAdapter(list) { consultationId ->
-
+        recyclerView.adapter = DeviceAdapter(list) { deviceId ->
+            for(device in list){
+                if(device.id == deviceId){
+                    showDeviceDetailsBottomSheet(device)
+                }
+            }
         }
+
+    }
+
+    private fun showDeviceDetailsBottomSheet(device: DeviceDTO){
+        val binding: DeviceDetailsBottomSheetBinding =
+            DeviceDetailsBottomSheetBinding.inflate(layoutInflater)
+            binding.deviceNameTextView.text = device.name
+            binding.deviceCategoryTextView.text = device.category
+            binding.wattageValueTextView.text = device.powerRating.toString()
+            binding.dailyUsageValue.text = device.estimatedUsageHours.toString()
+
+            val dailyWaste =  (device.powerRating / 1000) * device.estimatedUsageHours
+            binding.dailyWasteValue.text = dailyWaste.toString()
+            val dialog = BottomSheetDialog(this)
+            dialog.setContentView(binding.root)
+            dialog.show()
 
     }
 }

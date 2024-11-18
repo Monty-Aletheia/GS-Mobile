@@ -50,12 +50,12 @@
                 android:id="@+id/deviceNameTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
+                android:layout_marginLeft="10dp"
                 android:fontFamily="@font/fredoka"
                 android:textSize="18sp"
                 android:text="Televisão"
                 app:layout_constraintStart_toEndOf="@+id/deviceIcon"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="@id/deviceIcon" />
 
             <TextView
                 android:id="@+id/categoryTextView"

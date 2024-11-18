@@ -7,9 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.navigation.findNavController
 import com.example.windrose.R
-import com.example.windrose.databinding.ActivityMainBinding
 import com.example.windrose.databinding.ActivityProfileBinding
 import com.example.windrose.utils.CustomPercentFormatter
 import com.github.mikephil.charting.charts.PieChart
@@ -17,8 +15,6 @@ import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
-import com.github.mikephil.charting.formatter.PercentFormatter
-import com.github.mikephil.charting.utils.ColorTemplate
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -45,12 +41,13 @@ class ProfileActivity : AppCompatActivity() {
         val username: String = auth.currentUser!!.displayName.toString().split(" ")[0]
         binding.profileNameTextView.text = "Olá ${username}"
 
-        binding.signOutImageView.setOnClickListener{
+        binding.signOutImageView.setOnClickListener {
             auth.signOut()
             startActivity(Intent(this, MainActivity::class.java))
         }
 
-        binding.buttonToYourDevices.setOnClickListener{
+
+        binding.buttonToYourDevices.setOnClickListener {
             val intent = Intent(this, DeviceListActivity::class.java)
             startActivity(intent)
         }
@@ -58,8 +55,13 @@ class ProfileActivity : AppCompatActivity() {
         setPieChartConfig()
 
 
+    }
 
-
+    override fun onStart() {
+        super.onStart()
+        if (auth.currentUser == null){
+            finish()
+        }
     }
 
 

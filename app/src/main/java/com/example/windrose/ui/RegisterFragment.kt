@@ -96,6 +96,7 @@ class RegisterFragment : Fragment() {
         }
     }
 
+
     private fun registerUser(
         name: String,
         email: String,
