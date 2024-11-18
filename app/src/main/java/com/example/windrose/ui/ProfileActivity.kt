@@ -11,6 +11,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.windrose.R
 import com.example.windrose.databinding.ActivityProfileBinding
+import com.example.windrose.network.DeviceDTO
 import com.example.windrose.repository.UserRepository.getUserIdByFirebaseUid
 import com.example.windrose.utils.CustomPercentFormatter
 import com.github.mikephil.charting.charts.PieChart
@@ -42,6 +43,10 @@ class ProfileActivity : AppCompatActivity() {
             insets
         }
 
+        lifecycleScope.launch {
+            setPieChartConfig()
+        }
+
         val username: String = auth.currentUser!!.displayName.toString().split(" ")[0]
         binding.profileNameTextView.text = "Olá ${username}"
 
@@ -51,13 +56,28 @@ class ProfileActivity : AppCompatActivity() {
         }
 
 
-        binding.buttonToYourDevices.setOnClickListener {
+        binding.yourDevicesCardView.setOnClickListener {
             val intent = Intent(this, DeviceListActivity::class.java)
             startActivity(intent)
         }
 
+        lifecycleScope.launch {
+            val user = getUserIdByFirebaseUid(auth.currentUser!!.uid)
+            val devices = getAllUsersDevices(user!!.id, this@ProfileActivity)
+            val (kWattsPerDay, kWattsPerMonth) = calculateEnergyConsumption(devices)
 
+            binding.dailyWasteWattTextView.text = kWattsPerDay.toString()
+            binding.monthWasteTextView.text = kWattsPerMonth.toString()
+        }
 
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        lifecycleScope.launch {
+            setPieChartConfig()
+        }
     }
 
     override fun onStart() {
@@ -65,10 +85,21 @@ class ProfileActivity : AppCompatActivity() {
         if (auth.currentUser == null){
             finish()
         }
+    }
 
-        lifecycleScope.launch {
-            setPieChartConfig()
+
+    private fun calculateEnergyConsumption(devices: List<DeviceDTO>): Pair<Double, Double> {
+        var totalWattsPerDay = 0.0
+
+        devices.forEach { device ->
+            val dailyConsumption = device.powerRating * device.estimatedUsageHours
+            totalWattsPerDay += dailyConsumption
         }
+
+        val totalKWPerDay = totalWattsPerDay / 1000
+        val totalKWPerMonth = (totalWattsPerDay * 30) / 1000
+
+        return Pair(totalKWPerDay, totalKWPerMonth)
     }
 
 
@@ -86,7 +117,7 @@ class ProfileActivity : AppCompatActivity() {
             val pieDataSet = PieDataSet(list, "")
             val colors = arrayListOf(Color.parseColor("#9E9E9E"))
             pieDataSet.colors = colors
-            pieDataSet.valueTextSize = 0f  // Remove o texto das fatias
+            pieDataSet.valueTextSize = 0f
 
 
             val pieData = PieData(pieDataSet)
@@ -103,8 +134,8 @@ class ProfileActivity : AppCompatActivity() {
             val sortedDevices = devices.sortedByDescending { it.consumption }
 
 
-            val topDevices = sortedDevices.take(5)
-            val othersDevices = sortedDevices.drop(5)
+            val topDevices = sortedDevices.take(4)
+            val othersDevices = sortedDevices.drop(4)
 
 
             val totalConsumption = sortedDevices.sumOf { it.consumption }

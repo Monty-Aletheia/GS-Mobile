@@ -9,6 +9,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.HTTP
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 import java.util.UUID
@@ -98,6 +99,9 @@ interface UserDeviceService{
 
     @POST("users/{userId}/devices")
     suspend fun addUserDevice(@Path("userId") userId: String, @Body userDeviceListDTO: UserDeviceListDTO): Response<Unit>
+
+    @PUT("users/{userId}/devices/{userDeviceId}")
+    suspend fun updateUserDeviceEstimatedHour(@Path("userId") userId: String,@Path("userDeviceId") userDeviceId: String, @Body userDeviceDTO: UserDeviceDTO): Response<Unit>
 
     @HTTP(method = "DELETE", path = "users/{userId}/devices", hasBody = true)
     suspend fun deleteUserDevice(@Path("userId") userId: String, @Body userDeviceRemoveDTO: UserDeviceRemoveDTO): Response<Unit>
