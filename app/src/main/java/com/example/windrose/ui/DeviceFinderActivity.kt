@@ -27,11 +27,21 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doOnTextChanged
+import androidx.lifecycle.lifecycleScope
 import com.example.windrose.R
 import com.example.windrose.databinding.ActivityDeviceFinderBinding
 import com.example.windrose.databinding.EnterDeviceBottomSheetBinding
 import com.example.windrose.ml.AutoModel2
+import com.example.windrose.network.API
+import com.example.windrose.network.DeviceDTO
+import com.example.windrose.network.UserDeviceDTO
+import com.example.windrose.network.UserDeviceListDTO
+import com.example.windrose.repository.UserRepository.getUserIdByFirebaseUid
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.launch
 import org.tensorflow.lite.support.common.FileUtil
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
@@ -39,7 +49,7 @@ import org.tensorflow.lite.support.image.ops.ResizeOp
 import kotlin.concurrent.timer
 
 class DeviceFinderActivity : AppCompatActivity() {
-
+    private lateinit var auth: FirebaseAuth
     private lateinit var binding: ActivityDeviceFinderBinding
 
     lateinit var model: AutoModel2
@@ -79,7 +89,7 @@ class DeviceFinderActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
+        auth = Firebase.auth
         binding = ActivityDeviceFinderBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
@@ -243,18 +253,79 @@ class DeviceFinderActivity : AppCompatActivity() {
         }
 
         confirmButton.setOnClickListener {
-            startActivity(Intent(this, DeviceListActivity::class.java))
 
-            Toast.makeText(
-                this,
-                "Aparelho $itemName adicionado com sucesso!".trimIndent(),
-                Toast.LENGTH_LONG
-            ).show()
+            val estimatedUsageHours = sheetBinding.diaryUsageEditText.text.toString().toDouble()
+            getUserDeviceId(itemName, estimatedUsageHours)
+
+
         }
         cancelButton.setOnClickListener { dialog.dismiss() }
 
         dialog.setContentView(sheetBinding.root)
         dialog.show()
+    }
+
+    private fun getUserDeviceId(itemName: String, estimatedUsageHours: Double) =
+        lifecycleScope.launch {
+
+            val user = getUserIdByFirebaseUid(auth.currentUser!!.uid)
+            val userId = user!!.id
+            val device = getUserDevice(userId, itemName)
+            val deviceId = device!!.id
+            addUserDevice(userId, deviceId, estimatedUsageHours, itemName)
+
+        }
+
+    private suspend fun addUserDevice(
+        userId: String,
+        deviceId: String,
+        estimatedUsageHours: Double,
+        itemName: String
+    ) {
+        try {
+
+            val buildService = API.buildUserDeviceService()
+            val userDeviceDto = UserDeviceDTO(deviceId, estimatedUsageHours)
+            val list = listOf(userDeviceDto)
+            val userDeviceListDTO = UserDeviceListDTO(list)
+            val response = buildService.addUserDevice(userId, userDeviceListDTO)
+
+            if (response.isSuccessful) {
+                startActivity(Intent(this, DeviceListActivity::class.java))
+
+                Toast.makeText(
+                    this,
+                    "Aparelho $itemName adicionado com sucesso!".trimIndent(),
+                    Toast.LENGTH_LONG
+                ).show()
+
+            } else {
+                Toast.makeText(this, "Não foi possivel cadastrar o produto", Toast.LENGTH_LONG)
+                    .show()
+            }
+
+        } catch (ex: Exception) {
+            Toast.makeText(this, ex.message, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private suspend fun getUserDevice(userId: String, itemName: String): DeviceDTO? {
+        try {
+            val buildService = API.buildUserDeviceService()
+            val response = buildService.getUserDevicesById(userId)
+
+            if (response.isSuccessful) {
+                val devices = response.body()!!.content
+                return devices.find { it.name == itemName }
+            } else {
+                Log.e("API_ERROR", "Failed to fetch consultations")
+                return null
+            }
+
+        } catch (ex: Exception) {
+            Toast.makeText(this, ex.message, Toast.LENGTH_LONG).show()
+            return null
+        }
     }
 
     override fun onDestroy() {

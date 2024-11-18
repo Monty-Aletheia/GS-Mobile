@@ -7,13 +7,16 @@ import com.example.windrose.databinding.DeviceItemBinding
 import com.example.windrose.network.DeviceDTO
 import com.example.windrose.network.UserDeviceResponseDTO
 
-class DeviceAdapter (val deviceList: List<DeviceDTO>, val onClick: (String) -> Unit) : RecyclerView.Adapter<DeviceAdapter.ViewHolder>() {
+class DeviceAdapter (val deviceList: List<DeviceDTO>, val onClick: (String) -> Unit, val onClickDelete: (DeviceDTO) -> Unit) : RecyclerView.Adapter<DeviceAdapter.ViewHolder>() {
     inner class ViewHolder(private val binding: DeviceItemBinding): RecyclerView.ViewHolder(binding.root){
         fun bind(device: DeviceDTO){
             binding.deviceNameTextView.text = device.name
             binding.categoryTextView.text = device.category
             binding.deviceItemCardView.setOnClickListener{
                 onClick(device.id)
+            }
+            binding.trashImageView.setOnClickListener{
+                onClickDelete(device)
             }
         }
     }

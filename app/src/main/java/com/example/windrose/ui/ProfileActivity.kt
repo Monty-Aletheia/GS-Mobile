@@ -2,13 +2,16 @@ package com.example.windrose.ui
 
 import android.content.Intent
 import android.graphics.Color
+import com.example.windrose.repository.UserRepository.getAllUsersDevices
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.windrose.R
 import com.example.windrose.databinding.ActivityProfileBinding
+import com.example.windrose.repository.UserRepository.getUserIdByFirebaseUid
 import com.example.windrose.utils.CustomPercentFormatter
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.components.Legend
@@ -18,6 +21,7 @@ import com.github.mikephil.charting.data.PieEntry
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import kotlinx.coroutines.launch
 
 class ProfileActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProfileBinding;
@@ -52,7 +56,6 @@ class ProfileActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        setPieChartConfig()
 
 
     }
@@ -62,60 +65,107 @@ class ProfileActivity : AppCompatActivity() {
         if (auth.currentUser == null){
             finish()
         }
+
+        lifecycleScope.launch {
+            setPieChartConfig()
+        }
     }
 
 
 
-    private fun setPieChartConfig() {
-        val list: ArrayList<PieEntry> = ArrayList()
+    private suspend fun setPieChartConfig() {
 
 
-        list.add(PieEntry(50f, "Geladeira"))
-        list.add(PieEntry(20f, "Fogão"))
-        list.add(PieEntry(20f, "Micro-ondas"))
-        list.add(PieEntry(5f, "Tv"))
-        list.add(PieEntry(5f, "Torradeira"))
+        val user = getUserIdByFirebaseUid(auth.currentUser!!.uid)
+        val devices = getAllUsersDevices(user!!.id, this)
 
-        val pieDataSet = PieDataSet(list, "")
+        if (devices.isEmpty()) {
+            val list: ArrayList<PieEntry> = ArrayList()
+            list.add(PieEntry(100f, ""))
 
-        val colors = arrayListOf(
-            Color.parseColor("#4CAF50"),
-            Color.parseColor("#FFEB3B"),
-            Color.parseColor("#FF9800"),
-            Color.parseColor("#F44336"),
-            Color.parseColor("#00BCD4")
-        )
-
-        pieDataSet.colors = colors
-
-        pieDataSet.valueTextSize = 14f
-
-        pieDataSet.valueTextColor = Color.WHITE
-
-        pieDataSet.valueFormatter = CustomPercentFormatter()
+            val pieDataSet = PieDataSet(list, "")
+            val colors = arrayListOf(Color.parseColor("#9E9E9E"))
+            pieDataSet.colors = colors
+            pieDataSet.valueTextSize = 0f  // Remove o texto das fatias
 
 
-        val pieData = PieData(pieDataSet)
+            val pieData = PieData(pieDataSet)
 
-        pieChart.data = pieData
+            pieChart.description.text = ""
+            pieChart.legend.isEnabled = false
+            pieChart.data = pieData
+            pieChart.centerText = "Sem Dados"
+            pieChart.animateY(2000)
+            pieChart.invalidate()
+
+        } else {
+
+            val sortedDevices = devices.sortedByDescending { it.consumption }
 
 
-        pieChart.description.text = ""
+            val topDevices = sortedDevices.take(5)
+            val othersDevices = sortedDevices.drop(5)
 
-        pieChart.centerText = "Consumo"
 
-        pieChart.animateY(2000)
+            val totalConsumption = sortedDevices.sumOf { it.consumption }
+            val othersConsumption = othersDevices.sumOf { it.consumption }
 
-        pieChart.legend.isEnabled = true
-        pieChart.legend.orientation = Legend.LegendOrientation.VERTICAL
-        pieChart.legend.verticalAlignment = Legend.LegendVerticalAlignment.CENTER
-        pieChart.legend.horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
 
-        pieChart.legend.textSize = 16f
+            val list: ArrayList<PieEntry> = ArrayList()
 
-        pieChart.setDrawEntryLabels(false)
+            topDevices.forEach {
+                val percentual = (it.consumption / totalConsumption) * 100
+                list.add(PieEntry(percentual.toFloat(), it.name))
+            }
 
-        pieChart.invalidate()
+            if (othersDevices.isNotEmpty()) {
+                val othersPercentual = (othersConsumption / totalConsumption) * 100
+                list.add(PieEntry(othersPercentual.toFloat(), "OUTROS"))
+            }
+
+            val pieDataSet = PieDataSet(list, "")
+
+            val colors = arrayListOf(
+                Color.parseColor("#4CAF50"),
+                Color.parseColor("#FFEB3B"),
+                Color.parseColor("#FF9800"),
+                Color.parseColor("#F44336"),
+                Color.parseColor("#00BCD4")
+            )
+
+            colors.add(Color.parseColor("#9E9E9E"))
+
+            pieDataSet.colors = colors
+
+            pieDataSet.valueTextSize = 14f
+
+            pieDataSet.valueTextColor = Color.WHITE
+
+            pieDataSet.valueFormatter = CustomPercentFormatter()
+
+
+            val pieData = PieData(pieDataSet)
+
+            pieChart.data = pieData
+
+
+            pieChart.description.text = ""
+
+            pieChart.centerText = "Consumo"
+
+            pieChart.animateY(2000)
+
+            pieChart.legend.isEnabled = true
+            pieChart.legend.orientation = Legend.LegendOrientation.VERTICAL
+            pieChart.legend.verticalAlignment = Legend.LegendVerticalAlignment.CENTER
+            pieChart.legend.horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
+
+            pieChart.legend.textSize = 16f
+
+            pieChart.setDrawEntryLabels(false)
+
+            pieChart.invalidate()
+        }
     }
 
 

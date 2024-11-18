@@ -5,14 +5,33 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.GET
+import retrofit2.http.HTTP
 import retrofit2.http.POST
+import retrofit2.http.Path
+import retrofit2.http.Query
+import java.util.UUID
 
 const val URL = "http://192.168.0.181:8080/api/"
 
 
+data class UserDeviceDTO(
+    val deviceId: String,
+    val estimatedUsageHours: Double
+)
+
+data class UserDeviceListDTO(
+    val userDevices: List<UserDeviceDTO>
+)
+
+data class UserDeviceRemoveDTO(
+    val deviceIds: List<String>
+)
+
 
 data class UserDeviceResponseDTO(
-    val devices: List<DeviceDTO>
+    val content: List<DeviceDTO>
 )
 
 data class DeviceDTO(
@@ -21,7 +40,8 @@ data class DeviceDTO(
     val category: String,
     val model: String,
     val powerRating: Double,
-    val estimatedUsageHours: Double
+    val estimatedUsageHours: Double,
+    val consumption: Double
 
 )
 
@@ -68,9 +88,35 @@ interface AuthService {
     suspend fun signInUser(@Body userLoginDto: UserLoginDto): Response<UserResponse>
 }
 
+interface UserDeviceService{
+
+    @GET("users/firebase/{firebaseId}")
+    suspend fun getUserByFirebaseUid(@Path("firebaseId") firebaseId: String): Response<UserResponseDTO>
+
+    @GET("users/{userId}/devices")
+    suspend fun getUserDevicesById(@Path("userId") userId: String): Response<UserDeviceResponseDTO>
+
+    @POST("users/{userId}/devices")
+    suspend fun addUserDevice(@Path("userId") userId: String, @Body userDeviceListDTO: UserDeviceListDTO): Response<Unit>
+
+    @HTTP(method = "DELETE", path = "users/{userId}/devices", hasBody = true)
+    suspend fun deleteUserDevice(@Path("userId") userId: String, @Body userDeviceRemoveDTO: UserDeviceRemoveDTO): Response<Unit>
+
+}
+
 
 
 object API {
+
+    fun buildUserDeviceService(): UserDeviceService{
+        val retrofit = Retrofit.Builder()
+            .baseUrl(URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        return retrofit.create(UserDeviceService::class.java)
+    }
+
     fun buildAuthService(): AuthService {
         val retrofit =
             Retrofit.Builder()
