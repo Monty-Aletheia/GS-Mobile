@@ -98,7 +98,8 @@ class RegisterFragment : Fragment() {
 //            val userDto = UserDto(name, email, password)
 //            val authService = API.buildAuthService()
 //            val response = authService.registerUser(userDto)
-//
+//            val firebaseId = auth.currentUser.id
+
 //            if (response.isSuccessful) {
 //                Toast.makeText(requireContext(), "Conta criada com sucesso!", Toast.LENGTH_LONG).show()
 //                findNavController().navigate(R.id.loginFragment)

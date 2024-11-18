@@ -13,10 +13,11 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/fredoka"
         android:textSize="24sp"
-        android:layout_margin="40dp"
         android:text="Seus aparelhos"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_marginStart="20dp"
+        app:layout_constraintStart_toEndOf="@id/backArrowImageView"
+        app:layout_constraintBottom_toBottomOf="@id/backArrowImageView"
+        app:layout_constraintTop_toTopOf="@id/backArrowImageView" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
@@ -44,7 +45,19 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:maxImageSize="40dp"
-        app:srcCompat="@drawable/add_a_photo_24dp_ffffff_fill0_wght400_grad0_opsz24" />
+        app:srcCompat="@drawable/add_with_camera_icon" />
+
+    <ImageView
+        android:id="@+id/backArrowImageView"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:rotationY="180"
+        app:srcCompat="@drawable/arrow_right_to_line_svgrepo_com_2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="40dp"
+        android:layout_marginStart="20dp"
+        />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

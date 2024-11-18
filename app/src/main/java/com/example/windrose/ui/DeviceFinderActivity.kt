@@ -36,6 +36,7 @@ import org.tensorflow.lite.support.common.FileUtil
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.ResizeOp
+import kotlin.concurrent.timer
 
 class DeviceFinderActivity : AppCompatActivity() {
 
@@ -242,7 +243,13 @@ class DeviceFinderActivity : AppCompatActivity() {
         }
 
         confirmButton.setOnClickListener {
-            startActivity(Intent(this, DeviceFinderActivity::class.java))
+            startActivity(Intent(this, DeviceListActivity::class.java))
+
+            Toast.makeText(
+                this,
+                "Aparelho $itemName adicionado com sucesso!".trimIndent(),
+                Toast.LENGTH_LONG
+            ).show()
         }
         cancelButton.setOnClickListener { dialog.dismiss() }
 

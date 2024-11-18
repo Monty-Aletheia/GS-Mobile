@@ -25,8 +25,11 @@ class LoginFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         auth = Firebase.auth
+        if(auth.currentUser != null){
+            val intent = Intent(requireContext(), ProfileActivity::class.java)
+            startActivity(intent)
 
-
+        }
     }
 
 
@@ -54,10 +57,7 @@ class LoginFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        if(auth.currentUser != null){
-            val intent = Intent(requireContext(), ProfileActivity::class.java)
-            startActivity(intent)
-        }
+
     }
 
     override fun onResume() {
