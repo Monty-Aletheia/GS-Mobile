@@ -28,20 +28,22 @@ data class DeviceDTO(
 
 data class UserResponse(
     val message: String,
-    val user: User,
+    val user: UserResponseDTO,
     val _links: Links
 )
 
-data class User(
+data class UserResponseDTO(
     val id: String,
     val name: String,
-    val email: String
+    val email: String,
+    val firebaseId: String
 )
 
 data class UserDto(
     val name: String,
     val email: String,
-    val password: String
+    val password: String,
+    val firebaseId: String
 )
 
 data class Links(

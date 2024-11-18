@@ -1,6 +1,8 @@
 package com.example.windrose.ui
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -13,9 +15,11 @@ import com.example.windrose.databinding.FragmentRegisterBinding
 import com.example.windrose.network.API
 import com.example.windrose.network.UserDto
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -44,7 +48,7 @@ class RegisterFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.accountLoginTextView.setOnClickListener{
+        binding.accountLoginTextView.setOnClickListener {
             findNavController().popBackStack()
         }
 
@@ -70,13 +74,14 @@ class RegisterFragment : Fragment() {
                 val result = auth.createUserWithEmailAndPassword(email, password).await()
                 val currentUser = result.user
 
+
                 if (currentUser != null) {
                     val profileRequest = userProfileChangeRequest {
                         displayName = name
                     }
+                    Log.i("TOPA", "So pra ver")
                     currentUser.updateProfile(profileRequest).await()
-                    Toast.makeText(requireContext(), "Cadastrado com sucesso! Faça seu login", Toast.LENGTH_LONG).show()
-                    findNavController().navigate(R.id.loginFragment)
+                    registerUser(name, email, password, currentUser)
 
                 } else {
                     Toast.makeText(
@@ -91,27 +96,45 @@ class RegisterFragment : Fragment() {
         }
     }
 
-//    private suspend fun registerUser(name: String, email: String, password: String) {
-//
-//        try {
-//
-//            val userDto = UserDto(name, email, password)
-//            val authService = API.buildAuthService()
-//            val response = authService.registerUser(userDto)
-//            val firebaseId = auth.currentUser.id
 
-//            if (response.isSuccessful) {
-//                Toast.makeText(requireContext(), "Conta criada com sucesso!", Toast.LENGTH_LONG).show()
-//                findNavController().navigate(R.id.loginFragment)
-//            } else {
-//                // Mensagem de erro se a resposta não for bem-sucedida
-//                Toast.makeText(requireContext(), "Erro ao criar conta: ${response.errorBody()?.string()}", Toast.LENGTH_LONG).show()
-//            }
-//
-//
-//        } catch (ex: Exception){
-//            Toast.makeText(requireContext(), ex.message, Toast.LENGTH_LONG).show()
-//        }
-//    }
+    private fun registerUser(
+        name: String,
+        email: String,
+        password: String,
+        currentUser: FirebaseUser?
+    ) {
+
+        lifecycleScope.launch {
+
+            try {
+                val firebaseUuid = auth.currentUser!!.uid
+                val userDto = UserDto(name, email, password, firebaseUuid)
+                val authService = API.buildAuthService()
+                val response = authService.registerUser(userDto)
+
+
+                if (response.isSuccessful) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Olá, ${currentUser!!.displayName}!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    val intent = Intent(requireContext(), ProfileActivity::class.java)
+                    startActivity(intent)
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        "Erro ao criar conta: ${response.errorBody()?.string()}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+
+            } catch (ex: Exception) {
+                Toast.makeText(requireContext(), ex.message, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
 
 }

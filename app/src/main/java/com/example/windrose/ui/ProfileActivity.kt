@@ -64,6 +64,8 @@ class ProfileActivity : AppCompatActivity() {
         }
     }
 
+
+
     private fun setPieChartConfig() {
         val list: ArrayList<PieEntry> = ArrayList()
 
