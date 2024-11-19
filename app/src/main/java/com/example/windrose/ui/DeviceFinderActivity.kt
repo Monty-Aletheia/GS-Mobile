@@ -19,6 +19,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.Surface
 import android.view.TextureView
 import android.widget.EditText
@@ -43,6 +44,7 @@ import com.example.windrose.repository.UserRepository.getUserIdByFirebaseUid
 import com.example.windrose.utils.InputFormatter.inputTextToEstimatedHours
 import com.example.windrose.utils.InputFormatter.openTimePickerDialog
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -102,6 +104,11 @@ class DeviceFinderActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        binding.helpIconImageView.setOnClickListener{
+            showHelpDialog()
+        }
+
         getPermission()
 
         labels = FileUtil.loadLabels(this, "labels.txt")
@@ -234,6 +241,21 @@ class DeviceFinderActivity : AppCompatActivity() {
 
         }
         cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+    }
+
+    private fun showHelpDialog(){
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_help_device_finder, null)
+
+
+        val alertDialog = MaterialAlertDialogBuilder(this)
+            .setTitle("Como usar?")
+            .setView(view)
+            .setPositiveButton("Entendi") { dialogInterface, i ->
+                dialogInterface.dismiss()
+            }
+            .create()
+
+        alertDialog.show()
     }
 
     private fun showBottomSheetDialog(itemName: String) {
