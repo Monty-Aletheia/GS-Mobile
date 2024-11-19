@@ -59,6 +59,8 @@ class DeviceListActivity : AppCompatActivity() {
         binding.noListTextView2.isVisible = false
         binding.noListTextView3.isVisible = false
         binding.imageView2.isVisible = false
+        binding.refreshIconImageView.isVisible = false
+        binding.tryAgainButton.isVisible = false
 
         binding.floatingActionButton.setOnClickListener {
             val intent = Intent(this, DeviceFinderActivity::class.java)
@@ -79,17 +81,25 @@ class DeviceListActivity : AppCompatActivity() {
         val userId = getUserIdByFirebaseUid(firebaseUid)!!.id
         val list = getAllUsersDevicesForRecyclerView(userId, this@DeviceListActivity)
 
-        if (list.isEmpty()){
+
+        if (list == null){
+            binding.refreshIconImageView.isVisible = true
+            binding.tryAgainButton.isVisible = true
+            binding.tryAgainButton.setOnClickListener{
+                this@DeviceListActivity.recreate()
+            }
+
+        } else if(list.isEmpty()){
             binding.progressBarRecyclerView.isVisible = false
             binding.noListTextView1.isVisible = true
             binding.noListTextView2.isVisible = true
             binding.noListTextView3.isVisible = true
             binding.imageView2.isVisible = true
-
         }
+
         val recyclerView = binding.recyclerView
         recyclerView.layoutManager = LinearLayoutManager(this@DeviceListActivity)
-        recyclerView.adapter = DeviceAdapter(list, { deviceId ->
+        recyclerView.adapter = DeviceAdapter(list!!, { deviceId ->
             for (device in list) {
                 if (device.id == deviceId) {
                     showDeviceDetailsBottomSheet(device)
@@ -150,7 +160,7 @@ class DeviceListActivity : AppCompatActivity() {
         }
     }
 
-    suspend fun getAllUsersDevicesForRecyclerView(userId: String, context: Context): List<DeviceDTO> {
+    private suspend fun getAllUsersDevicesForRecyclerView(userId: String, context: Context): List<DeviceDTO>? {
         try {
             val buildService = API.buildUserDeviceService()
             val response = buildService.getUserDevicesById(userId)
@@ -160,15 +170,14 @@ class DeviceListActivity : AppCompatActivity() {
                 binding.recyclerView.isVisible = true
                 binding.progressBarRecyclerView.isVisible = false
                 return devices
-            } else {
-                Log.e("API_ERROR", "Failed to fetch consultations")
-                return emptyList()
             }
 
+            return emptyList()
 
         } catch (ex: Exception) {
             Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
-            return emptyList()
+
+            return null
         }
     }
 
