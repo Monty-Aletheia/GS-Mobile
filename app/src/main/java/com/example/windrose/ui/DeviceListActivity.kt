@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.text.InputType
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.LayoutInflater
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.Toast
@@ -26,6 +27,7 @@ import com.example.windrose.network.UserDeviceRemoveDTO
 import com.example.windrose.repository.UserRepository.getAllUsersDevices
 import com.example.windrose.repository.UserRepository.getUserIdByFirebaseUid
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -151,64 +153,25 @@ class DeviceListActivity : AppCompatActivity() {
 
     }
 
-    private fun showEditEstimatedHourDialog(device: DeviceDTO) {
-        val editText = EditText(this).apply {
-            hint = "${device.estimatedUsageHours}"
-            inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+    private fun showEditEstimatedHourDialog(device: DeviceDTO){
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_update_estimated_hour, null)
+        val newEstimatedHourEditText: EditText = view.findViewById(R.id.editTextNumberDecimal)
 
-            setBackgroundResource(R.drawable.bg_update_hours_edit_text)
 
-            minWidth = TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                200f,
-                resources.displayMetrics
-            ).toInt()
-        }
-
-        val container = FrameLayout(this).apply {
-            val marginInPixels = TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                20f,
-                resources.displayMetrics
-            ).toInt()
-
-            setPadding(marginInPixels, marginInPixels, marginInPixels, marginInPixels)
-        }
-
-        val layoutParams = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.WRAP_CONTENT
-        )
-
-        editText.setPadding(
-            TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                20f, // 20dp
-                resources.displayMetrics
-            ).toInt(),
-            editText.paddingTop,
-            editText.paddingRight,
-            editText.paddingBottom
-        )
-
-        layoutParams.gravity = Gravity.CENTER
-        editText.layoutParams = layoutParams
-
-        container.addView(editText)
-
-        AlertDialog.Builder(this)
-            .setTitle("Insira o novo valor:")
-            .setView(container)
-            .setPositiveButton("Confirmar") { dialog, _ ->
-                val newEstimatedHour = editText.text.toString().toDouble()
+        val alertDialog = MaterialAlertDialogBuilder(this)
+            .setTitle("Alterar tempo de uso")
+            .setView(view)
+            .setPositiveButton("Confirmar") { dialogInterface, i ->
+                val newEstimatedHour = newEstimatedHourEditText.text.toString().toDouble()
                 updateUserEstimatedHour(device, newEstimatedHour)
-                dialog.dismiss()
+                dialogInterface.dismiss()
             }
-            .setNegativeButton("Cancelar") { dialog, _ ->
-                dialog.dismiss()
+            .setNegativeButton("Cancelar"){ dialogInterface, i ->
+                dialogInterface.dismiss()
             }
             .create()
-            .show()
+
+        alertDialog.show()
     }
 
     private fun updateUserEstimatedHour(device: DeviceDTO, newEstimatedHour: Double) =

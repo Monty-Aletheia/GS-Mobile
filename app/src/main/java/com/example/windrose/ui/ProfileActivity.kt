@@ -4,14 +4,23 @@ import android.content.Intent
 import android.graphics.Color
 import com.example.windrose.repository.UserRepository.getAllUsersDevices
 import android.os.Bundle
+import android.text.InputType
+import android.util.TypedValue
+import android.view.LayoutInflater
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.windrose.R
 import com.example.windrose.databinding.ActivityProfileBinding
+import com.example.windrose.network.API
 import com.example.windrose.network.DeviceDTO
+import com.example.windrose.network.UpdateUserDTO
 import com.example.windrose.repository.UserRepository.getUserIdByFirebaseUid
 import com.example.windrose.utils.CustomPercentFormatter
 import com.github.mikephil.charting.charts.PieChart
@@ -19,15 +28,20 @@ import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.auth.auth
+import com.google.firebase.auth.userProfileChangeRequest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class ProfileActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProfileBinding;
     private lateinit var auth: FirebaseAuth
     private lateinit var pieChart: PieChart
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,6 +63,10 @@ class ProfileActivity : AppCompatActivity() {
 
         val username: String = auth.currentUser!!.displayName.toString().split(" ")[0]
         binding.profileNameTextView.text = "Olá ${username}"
+
+        binding.editPencil.setOnClickListener {
+            showDialog()
+        }
 
         binding.signOutImageView.setOnClickListener {
             auth.signOut()
@@ -72,6 +90,57 @@ class ProfileActivity : AppCompatActivity() {
 
     }
 
+    private fun showDialog(){
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_update_username, null)
+        val newNameEditText: EditText = view.findViewById(R.id.newNameEditText)
+        val passwordEditText: EditText = view.findViewById(R.id.passwordEditText)
+
+
+        val alertDialog = MaterialAlertDialogBuilder(this)
+            .setTitle("Alterar nome")
+            .setView(view)
+            .setPositiveButton("Confirmar") { dialogInterface, i ->
+                val newUserName = newNameEditText.text.toString()
+                val password = passwordEditText.text.toString()
+                updateUserName(newUserName, password)
+                dialogInterface.dismiss()
+            }
+            .setNegativeButton("Cancelar"){ dialogInterface, i ->
+                dialogInterface.dismiss()
+            }
+            .create()
+
+        alertDialog.show()
+    }
+
+
+    private fun updateUserName(newUserName: String, userPassword: String) = lifecycleScope.launch {
+        try {
+            val user = auth.currentUser!!
+            val userFound = getUserIdByFirebaseUid(user.uid)
+            val userId = userFound!!.id
+            val email = user.email!!
+            val updateUserDTO = UpdateUserDTO(newUserName, email, userPassword, user.uid)
+            val buildService = API.buildUserService()
+            val response = buildService.updateUserName(userId, updateUserDTO)
+
+            if (response.isSuccessful){
+                val profileUpdates = UserProfileChangeRequest.Builder()
+                    .setDisplayName(newUserName)
+                    .build()
+                user.updateProfile(profileUpdates).await()
+
+                Toast.makeText(this@ProfileActivity, "Nome alterado com sucesso!", Toast.LENGTH_LONG).show()
+                this@ProfileActivity.recreate()
+            }
+
+        } catch (ex: Exception) {
+            Toast.makeText(this@ProfileActivity, ex.message, Toast.LENGTH_LONG).show()
+        }
+
+    }
+
+
     override fun onResume() {
         super.onResume()
 
@@ -82,7 +151,7 @@ class ProfileActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        if (auth.currentUser == null){
+        if (auth.currentUser == null) {
             finish()
         }
     }
@@ -103,8 +172,12 @@ class ProfileActivity : AppCompatActivity() {
     }
 
 
-
     private suspend fun setPieChartConfig() {
+        data class Device(
+            val name: String,
+            val consumption: Double
+        )
+
 
 
         val user = getUserIdByFirebaseUid(auth.currentUser!!.uid)
@@ -131,7 +204,16 @@ class ProfileActivity : AppCompatActivity() {
 
         } else {
 
-            val sortedDevices = devices.sortedByDescending { it.consumption }
+            val groupedDevices = devices
+                .groupBy { it.name }
+                .mapValues { entry ->
+                    entry.value.sumOf { it.consumption }
+                }
+                .map { (name, totalConsumption) ->
+                    Device(name, totalConsumption)
+                }
+
+            val sortedDevices = groupedDevices.sortedByDescending { it.consumption }
 
 
             val topDevices = sortedDevices.take(4)

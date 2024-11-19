@@ -67,6 +67,13 @@ data class UserDto(
     val firebaseId: String
 )
 
+data class UpdateUserDTO(
+    val name: String,
+    val email: String,
+    val password: String,
+    val firebaseId: String
+)
+
 data class Links(
     val login: Link
 )
@@ -89,10 +96,18 @@ interface AuthService {
     suspend fun signInUser(@Body userLoginDto: UserLoginDto): Response<UserResponse>
 }
 
-interface UserDeviceService{
+interface UserService{
 
     @GET("users/firebase/{firebaseId}")
     suspend fun getUserByFirebaseUid(@Path("firebaseId") firebaseId: String): Response<UserResponseDTO>
+
+    @PUT("users/{userId}")
+    suspend fun updateUserName(@Path("userId") userId: String, @Body updateUserDTO: UpdateUserDTO): Response<Unit>
+
+
+}
+
+interface UserDeviceService{
 
     @GET("users/{userId}/devices")
     suspend fun getUserDevicesById(@Path("userId") userId: String): Response<UserDeviceResponseDTO>
@@ -111,6 +126,15 @@ interface UserDeviceService{
 
 
 object API {
+
+    fun buildUserService(): UserService{
+        val retrofit = Retrofit.Builder()
+            .baseUrl(URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        return retrofit.create(UserService::class.java)
+    }
 
     fun buildUserDeviceService(): UserDeviceService{
         val retrofit = Retrofit.Builder()

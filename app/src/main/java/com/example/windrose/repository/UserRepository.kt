@@ -11,7 +11,7 @@ object UserRepository {
 
     suspend fun getUserIdByFirebaseUid(firebaseUid: String): UserResponseDTO? {
         try {
-            val buildService = API.buildUserDeviceService()
+            val buildService = API.buildUserService()
             val response = buildService.getUserByFirebaseUid(firebaseUid)
 
             if (response.isSuccessful) {
