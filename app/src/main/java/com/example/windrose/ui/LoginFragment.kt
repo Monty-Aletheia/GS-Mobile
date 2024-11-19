@@ -50,10 +50,6 @@ class LoginFragment : Fragment() {
             findNavController().navigate(R.id.registerFragment)
         }
 
-        binding.windRoseImageView.setOnClickListener{
-            val intent = Intent(requireContext(), DeviceFinderActivity::class.java)
-            startActivity(intent)
-        }
 
         binding.loginButton.setOnClickListener{
             signInUser()
