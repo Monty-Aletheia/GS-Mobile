@@ -1,8 +1,10 @@
 package com.example.windrose.ui
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -14,6 +16,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.windrose.R
@@ -50,6 +53,13 @@ class DeviceListActivity : AppCompatActivity() {
             insets
         }
 
+        binding.recyclerView.isVisible = false
+        binding.progressBarRecyclerView.isVisible = true
+        binding.noListTextView1.isVisible = false
+        binding.noListTextView2.isVisible = false
+        binding.noListTextView3.isVisible = false
+        binding.imageView2.isVisible = false
+
         binding.floatingActionButton.setOnClickListener {
             val intent = Intent(this, DeviceFinderActivity::class.java)
             startActivity(intent)
@@ -67,8 +77,16 @@ class DeviceListActivity : AppCompatActivity() {
 
         val firebaseUid = auth.currentUser!!.uid
         val userId = getUserIdByFirebaseUid(firebaseUid)!!.id
-        val list = getAllUsersDevices(userId, this@DeviceListActivity)
+        val list = getAllUsersDevicesForRecyclerView(userId, this@DeviceListActivity)
 
+        if (list.isEmpty()){
+            binding.progressBarRecyclerView.isVisible = false
+            binding.noListTextView1.isVisible = true
+            binding.noListTextView2.isVisible = true
+            binding.noListTextView3.isVisible = true
+            binding.imageView2.isVisible = true
+
+        }
         val recyclerView = binding.recyclerView
         recyclerView.layoutManager = LinearLayoutManager(this@DeviceListActivity)
         recyclerView.adapter = DeviceAdapter(list, { deviceId ->
@@ -132,6 +150,28 @@ class DeviceListActivity : AppCompatActivity() {
         }
     }
 
+    suspend fun getAllUsersDevicesForRecyclerView(userId: String, context: Context): List<DeviceDTO> {
+        try {
+            val buildService = API.buildUserDeviceService()
+            val response = buildService.getUserDevicesById(userId)
+
+            if (response.isSuccessful) {
+                val devices = response.body()!!.content
+                binding.recyclerView.isVisible = true
+                binding.progressBarRecyclerView.isVisible = false
+                return devices
+            } else {
+                Log.e("API_ERROR", "Failed to fetch consultations")
+                return emptyList()
+            }
+
+
+        } catch (ex: Exception) {
+            Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+            return emptyList()
+        }
+    }
+
 
     private fun showDeviceDetailsBottomSheet(device: DeviceDTO) {
         val binding: DeviceDetailsBottomSheetBinding =
@@ -153,7 +193,7 @@ class DeviceListActivity : AppCompatActivity() {
 
     }
 
-    private fun showEditEstimatedHourDialog(device: DeviceDTO){
+    private fun showEditEstimatedHourDialog(device: DeviceDTO) {
         val view = LayoutInflater.from(this).inflate(R.layout.dialog_update_estimated_hour, null)
         val newEstimatedHourEditText: EditText = view.findViewById(R.id.editTextNumberDecimal)
 
@@ -166,7 +206,7 @@ class DeviceListActivity : AppCompatActivity() {
                 updateUserEstimatedHour(device, newEstimatedHour)
                 dialogInterface.dismiss()
             }
-            .setNegativeButton("Cancelar"){ dialogInterface, i ->
+            .setNegativeButton("Cancelar") { dialogInterface, i ->
                 dialogInterface.dismiss()
             }
             .create()

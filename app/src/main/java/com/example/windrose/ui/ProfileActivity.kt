@@ -1,10 +1,12 @@
 package com.example.windrose.ui
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import com.example.windrose.repository.UserRepository.getAllUsersDevices
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.widget.EditText
@@ -15,6 +17,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.example.windrose.R
 import com.example.windrose.databinding.ActivityProfileBinding
@@ -57,7 +60,12 @@ class ProfileActivity : AppCompatActivity() {
             insets
         }
 
+        binding.pieChart.isVisible = false
+        binding.progressBar.isVisible = true
+
+
         lifecycleScope.launch {
+
             setPieChartConfig()
         }
 
@@ -173,15 +181,14 @@ class ProfileActivity : AppCompatActivity() {
 
 
     private suspend fun setPieChartConfig() {
+
         data class Device(
             val name: String,
             val consumption: Double
         )
 
-
-
         val user = getUserIdByFirebaseUid(auth.currentUser!!.uid)
-        val devices = getAllUsersDevices(user!!.id, this)
+        val devices = getAllUsersDevicesToPie(user!!.id, this)
 
         if (devices.isEmpty()) {
             val list: ArrayList<PieEntry> = ArrayList()
@@ -278,6 +285,28 @@ class ProfileActivity : AppCompatActivity() {
             pieChart.setDrawEntryLabels(false)
 
             pieChart.invalidate()
+        }
+    }
+
+    private suspend fun getAllUsersDevicesToPie(userId: String, context: Context): List<DeviceDTO> {
+        try {
+            val buildService = API.buildUserDeviceService()
+            val response = buildService.getUserDevicesById(userId)
+
+            if (response.isSuccessful) {
+                val devices = response.body()!!.content
+                binding.pieChart.isVisible = true
+                binding.progressBar.isVisible = false
+                return devices
+            } else {
+                Log.e("API_ERROR", "Failed to fetch consultations")
+                return emptyList()
+            }
+
+
+        } catch (ex: Exception) {
+            Toast.makeText(context, ex.message, Toast.LENGTH_LONG).show()
+            return emptyList()
         }
     }
 
