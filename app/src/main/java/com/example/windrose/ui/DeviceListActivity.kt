@@ -29,6 +29,9 @@ import com.example.windrose.network.UserDeviceDTO
 import com.example.windrose.network.UserDeviceRemoveDTO
 import com.example.windrose.repository.UserRepository.getAllUsersDevices
 import com.example.windrose.repository.UserRepository.getUserIdByFirebaseUid
+import com.example.windrose.utils.InputFormatter.estimatedHoursToTextView
+import com.example.windrose.utils.InputFormatter.inputTextToEstimatedHours
+import com.example.windrose.utils.InputFormatter.openTimePickerDialog
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.Firebase
@@ -107,6 +110,7 @@ class DeviceListActivity : AppCompatActivity() {
             }
         }, { device ->
             showDeleteConfirmationDialog(device, userId)
+
         })
 
 
@@ -146,6 +150,7 @@ class DeviceListActivity : AppCompatActivity() {
                     "Dispositivo excluído com sucesso!",
                     Toast.LENGTH_LONG
                 ).show()
+
             } else {
                 Toast.makeText(
                     this@DeviceListActivity,
@@ -188,14 +193,16 @@ class DeviceListActivity : AppCompatActivity() {
         binding.deviceNameTextView.text = device.name
         binding.deviceCategoryTextView.text = device.category
         binding.wattageValueTextView.text = device.powerRating.toString()
-        binding.dailyUsageValue.text = device.estimatedUsageHours.toString()
+        val estimatedHours = estimatedHoursToTextView(device.estimatedUsageHours.toString().toDouble())
+        binding.dailyUsageValue.text = estimatedHours
 
         binding.editPencilImageView.setOnClickListener {
             showEditEstimatedHourDialog(device)
         }
 
         val dailyWaste = (device.powerRating / 1000) * device.estimatedUsageHours
-        binding.dailyWasteValue.text = dailyWaste.toString()
+        val dailyWasteFormatted = String.format("%.2f", dailyWaste)
+        binding.dailyWasteValue.text = dailyWasteFormatted
         val dialog = BottomSheetDialog(this)
         dialog.setContentView(binding.root)
         dialog.show()
@@ -206,12 +213,16 @@ class DeviceListActivity : AppCompatActivity() {
         val view = LayoutInflater.from(this).inflate(R.layout.dialog_update_estimated_hour, null)
         val newEstimatedHourEditText: EditText = view.findViewById(R.id.editTextNumberDecimal)
 
+        newEstimatedHourEditText.setOnClickListener{
+            openTimePickerDialog(newEstimatedHourEditText, this)
+        }
 
         val alertDialog = MaterialAlertDialogBuilder(this)
             .setTitle("Alterar tempo de uso")
             .setView(view)
             .setPositiveButton("Confirmar") { dialogInterface, i ->
-                val newEstimatedHour = newEstimatedHourEditText.text.toString().toDouble()
+                val inputsNewEstimatedHour = newEstimatedHourEditText.text.toString()
+                val newEstimatedHour = inputTextToEstimatedHours(inputsNewEstimatedHour)
                 updateUserEstimatedHour(device, newEstimatedHour)
                 dialogInterface.dismiss()
             }

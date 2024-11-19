@@ -35,10 +35,12 @@
         android:layout_height="wrap_content"
         android:background="@drawable/bg_edit_text"
         android:layout_marginTop="20sp"
-        android:hint="Insira o uso diário em horas"
+        android:hint="Insira seu uso Horas:Minutos"
         android:textColorHint="#646464"
         android:textColor="@color/black"
         android:padding="14dp"
+        android:focusable="false"
+        android:clickable="true"
         android:inputType="number"
         />
 

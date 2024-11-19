@@ -1,6 +1,7 @@
 package com.example.windrose.ui
 
 import android.annotation.SuppressLint
+import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -10,6 +11,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.SurfaceTexture
+import android.graphics.drawable.ColorDrawable
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
@@ -19,6 +21,7 @@ import android.os.HandlerThread
 import android.util.Log
 import android.view.Surface
 import android.view.TextureView
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -37,6 +40,8 @@ import com.example.windrose.network.DeviceDTO
 import com.example.windrose.network.UserDeviceDTO
 import com.example.windrose.network.UserDeviceListDTO
 import com.example.windrose.repository.UserRepository.getUserIdByFirebaseUid
+import com.example.windrose.utils.InputFormatter.inputTextToEstimatedHours
+import com.example.windrose.utils.InputFormatter.openTimePickerDialog
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -46,7 +51,6 @@ import org.tensorflow.lite.support.common.FileUtil
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.ResizeOp
-import kotlin.concurrent.timer
 
 class DeviceFinderActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
@@ -252,9 +256,14 @@ class DeviceFinderActivity : AppCompatActivity() {
             confirmButton.isEnabled = !text.isNullOrEmpty()
         }
 
+        diaryUsageInput.setOnClickListener {
+            openTimePickerDialog(diaryUsageInput, this)
+        }
+
         confirmButton.setOnClickListener {
 
-            val estimatedUsageHours = sheetBinding.diaryUsageEditText.text.toString().toDouble()
+            val inputEstimatedUsageHours = sheetBinding.diaryUsageEditText.text.toString()
+            val estimatedUsageHours = inputTextToEstimatedHours(inputEstimatedUsageHours)
             getUserDeviceId(itemName, estimatedUsageHours)
 
 

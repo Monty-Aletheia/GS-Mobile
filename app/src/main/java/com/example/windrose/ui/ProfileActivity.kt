@@ -98,6 +98,30 @@ class ProfileActivity : AppCompatActivity() {
 
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        lifecycleScope.launch {
+            setPieChartConfig()
+        }
+
+        lifecycleScope.launch {
+            val user = getUserIdByFirebaseUid(auth.currentUser!!.uid)
+            val devices = getAllUsersDevices(user!!.id, this@ProfileActivity)
+            val (kWattsPerDay, kWattsPerMonth) = calculateEnergyConsumption(devices)
+
+            binding.dailyWasteWattTextView.text = kWattsPerDay.toString()
+            binding.monthWasteTextView.text = kWattsPerMonth.toString()
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (auth.currentUser == null) {
+            finish()
+        }
+    }
+
     private fun showDialog(){
         val view = LayoutInflater.from(this).inflate(R.layout.dialog_update_username, null)
         val newNameEditText: EditText = view.findViewById(R.id.newNameEditText)
@@ -149,21 +173,6 @@ class ProfileActivity : AppCompatActivity() {
     }
 
 
-    override fun onResume() {
-        super.onResume()
-
-        lifecycleScope.launch {
-            setPieChartConfig()
-        }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        if (auth.currentUser == null) {
-            finish()
-        }
-    }
-
 
     private fun calculateEnergyConsumption(devices: List<DeviceDTO>): Pair<Double, Double> {
         var totalWattsPerDay = 0.0
@@ -176,7 +185,10 @@ class ProfileActivity : AppCompatActivity() {
         val totalKWPerDay = totalWattsPerDay / 1000
         val totalKWPerMonth = (totalWattsPerDay * 30) / 1000
 
-        return Pair(totalKWPerDay, totalKWPerMonth)
+        val roundedKWPerDay = String.format("%.2f", totalKWPerDay).toDouble()
+        val roundedKWPerMonth = String.format("%.2f", totalKWPerMonth).toDouble()
+
+        return Pair(roundedKWPerDay, roundedKWPerMonth)
     }
 
 
