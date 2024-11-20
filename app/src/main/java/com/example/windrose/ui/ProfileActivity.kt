@@ -39,6 +39,7 @@ import com.google.firebase.auth.auth
 import com.google.firebase.auth.userProfileChangeRequest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.util.Locale
 
 class ProfileActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProfileBinding;
@@ -185,8 +186,8 @@ class ProfileActivity : AppCompatActivity() {
         val totalKWPerDay = totalWattsPerDay / 1000
         val totalKWPerMonth = (totalWattsPerDay * 30) / 1000
 
-        val roundedKWPerDay = String.format("%.2f", totalKWPerDay).toDouble()
-        val roundedKWPerMonth = String.format("%.2f", totalKWPerMonth).toDouble()
+        val roundedKWPerDay = String.format(Locale.US, "%.2f", totalKWPerDay).toDouble()
+        val roundedKWPerMonth = String.format(Locale.US,"%.2f", totalKWPerMonth).toDouble()
 
         return Pair(roundedKWPerDay, roundedKWPerMonth)
     }

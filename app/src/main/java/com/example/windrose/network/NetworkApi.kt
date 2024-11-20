@@ -14,7 +14,7 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 import java.util.UUID
 
-const val URL = "http://192.168.0.181:8080/api/"
+const val URL = "http://windrose-spring.brazilsouth.cloudapp.azure.com/api/"
 
 
 data class UserDeviceDTO(
@@ -87,6 +87,19 @@ data class UserLoginDto(
     val password: String
 )
 
+data class DeviceResponseDTO(
+    val content: List<DeviceObject>
+)
+
+data class DeviceObject(
+    val id: String,
+    val name: String,
+    val category: String,
+    val model: String,
+    val powerRating: Double,
+    val estimatedUsageHours: Double
+)
+
 interface AuthService {
 
     @POST("auth/register")
@@ -104,6 +117,13 @@ interface UserService{
     @PUT("users/{userId}")
     suspend fun updateUserName(@Path("userId") userId: String, @Body updateUserDTO: UpdateUserDTO): Response<Unit>
 
+
+}
+
+interface DeviceService {
+
+    @GET("devices")
+    suspend fun getAllDevices(): Response<DeviceResponseDTO>
 
 }
 
@@ -153,5 +173,14 @@ object API {
                 .build()
 
         return retrofit.create(AuthService::class.java)
+    }
+
+    fun buildDeviceService(): DeviceService{
+        val retrofit = Retrofit.Builder()
+            .baseUrl(URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        return retrofit.create(DeviceService::class.java)
     }
 }

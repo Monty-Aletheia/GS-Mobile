@@ -34,7 +34,7 @@ import com.example.windrose.databinding.ActivityDeviceFinderBinding
 import com.example.windrose.databinding.EnterDeviceBottomSheetBinding
 import com.example.windrose.ml.AutoModel2
 import com.example.windrose.network.API
-import com.example.windrose.network.DeviceDTO
+import com.example.windrose.network.DeviceObject
 import com.example.windrose.network.UserDeviceDTO
 import com.example.windrose.network.UserDeviceListDTO
 import com.example.windrose.repository.UserRepository.getUserIdByFirebaseUid
@@ -47,7 +47,6 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import org.tensorflow.lite.support.common.FileUtil
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
@@ -78,18 +77,18 @@ class DeviceFinderActivity : AppCompatActivity() {
     private var locations: FloatArray = floatArrayOf()
     private var classes: FloatArray = floatArrayOf()
 
-    private lateinit var allowedDetectionsList: List<String>
-//        listOf(
-//            "Televisão",
-//            "Notebook",
-//            "Celular",
-//            "Micro-ondas",
-//            "Fogão",
-//            "Torradeira",
-//            "Geladeira",
-//            "Relógio",
-//            "Secador de Cabelo"
-//        )
+    private var allowedDetectionsList: List<String> =
+        listOf(
+            "Televisão",
+            "Notebook",
+            "Celular",
+            "Micro-ondas",
+            "Fogão",
+            "Torradeira",
+            "Geladeira",
+            "Relógio",
+            "Secador de Cabelo"
+        )
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -106,7 +105,7 @@ class DeviceFinderActivity : AppCompatActivity() {
             insets
         }
 
-        lifecycleScope.launch { getAllowedDevices() }
+//        lifecycleScope.launch { getAllowedDevices() }
 
 
 
@@ -248,14 +247,14 @@ class DeviceFinderActivity : AppCompatActivity() {
         cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
     }
 
-    private suspend fun getAllowedDevices() {
-        val ref = db.collection("allowedDevicesCollection").document("allowedDevicesDocument")
-        ref.get().addOnSuccessListener {
-            if (it != null) {
-                allowedDetectionsList = it.data?.get("allowedDevicesList") as List<String>
-            }
-        }.await()
-    }
+//    private suspend fun getAllowedDevices() {
+//        val ref = db.collection("allowedDevicesCollection").document("allowedDevicesDocument")
+//        ref.get().addOnSuccessListener {
+//            if (it != null) {
+//                allowedDetectionsList = it.data?.get("allowedDevicesList") as List<String>
+//            }
+//        }
+//    }
 
     private fun showHelpDialog(){
         val view = LayoutInflater.from(this).inflate(R.layout.dialog_help_device_finder, null)
@@ -300,7 +299,7 @@ class DeviceFinderActivity : AppCompatActivity() {
 
             val inputEstimatedUsageHours = sheetBinding.diaryUsageEditText.text.toString()
             val estimatedUsageHours = inputTextToEstimatedHours(inputEstimatedUsageHours)
-            getUserDeviceId(itemName, estimatedUsageHours)
+            registerNewDevice(itemName, estimatedUsageHours)
 
 
         }
@@ -310,12 +309,12 @@ class DeviceFinderActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    private fun getUserDeviceId(itemName: String, estimatedUsageHours: Double) =
+    private fun registerNewDevice(itemName: String, estimatedUsageHours: Double) =
         lifecycleScope.launch {
 
             val user = getUserIdByFirebaseUid(auth.currentUser!!.uid)
             val userId = user!!.id
-            val device = getUserDevice(userId, itemName)
+            val device = getDevice(itemName)
             val deviceId = device!!.id
             addUserDevice(userId, deviceId, estimatedUsageHours, itemName)
 
@@ -354,10 +353,10 @@ class DeviceFinderActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun getUserDevice(userId: String, itemName: String): DeviceDTO? {
+    private suspend fun getDevice(itemName: String): DeviceObject? {
         try {
-            val buildService = API.buildUserDeviceService()
-            val response = buildService.getUserDevicesById(userId)
+            val buildService = API.buildDeviceService()
+            val response = buildService.getAllDevices()
 
             if (response.isSuccessful) {
                 val devices = response.body()!!.content
