@@ -43,7 +43,10 @@ android {
 
 dependencies {
 
+    implementation (libs.firebase.database.ktx)
+    implementation (libs.androidx.datastore.preferences)
     implementation (libs.kotlinx.coroutines.play.services)
+    implementation(libs.google.firebase.database)
     implementation (libs.play.services.gcm)
     implementation (libs.play.services.auth)
     implementation(libs.firebase.firestore)

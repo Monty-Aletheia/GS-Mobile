@@ -18,7 +18,7 @@ object UserRepository {
                 val user = response.body()!!
                 return user
             } else {
-                Log.e("API_ERROR", "Failed to fetch consultations")
+                Log.i("API_ERROR", "Failed to fetch consultations")
                 return null
             }
 
@@ -37,7 +37,7 @@ object UserRepository {
                 val devices = response.body()!!.content
                 return devices
             } else {
-                Log.e("API_ERROR", "Failed to fetch consultations")
+                Log.i("API_ERROR", "Failed to fetch consultations")
                 return emptyList()
             }
 

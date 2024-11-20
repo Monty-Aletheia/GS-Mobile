@@ -35,6 +35,7 @@ import com.example.windrose.databinding.EnterDeviceBottomSheetBinding
 import com.example.windrose.ml.AutoModel2
 import com.example.windrose.network.API
 import com.example.windrose.network.DeviceObject
+import com.example.windrose.network.DeviceResponse
 import com.example.windrose.network.UserDeviceDTO
 import com.example.windrose.network.UserDeviceListDTO
 import com.example.windrose.repository.UserRepository.getUserIdByFirebaseUid
@@ -44,9 +45,16 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.tensorflow.lite.support.common.FileUtil
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
@@ -72,23 +80,23 @@ class DeviceFinderActivity : AppCompatActivity() {
     lateinit var cameraManager: CameraManager
     lateinit var handler: Handler
 
-    private var db = Firebase.firestore
+
     private var scores: FloatArray = floatArrayOf()
     private var locations: FloatArray = floatArrayOf()
     private var classes: FloatArray = floatArrayOf()
 
-    private var allowedDetectionsList: List<String> =
-        listOf(
-            "Televisão",
-            "Notebook",
-            "Celular",
-            "Micro-ondas",
-            "Fogão",
-            "Torradeira",
-            "Geladeira",
-            "Relógio",
-            "Secador de Cabelo"
-        )
+    private lateinit var allowedDetectionsList: List<String>
+//        listOf(
+//            "Televisão",
+//            "Notebook",
+//            "Celular",
+//            "Micro-ondas",
+//            "Fogão",
+//            "Torradeira",
+//            "Geladeira",
+//            "Relógio",
+//            "Secador de Cabelo"
+//        )
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,24 +104,22 @@ class DeviceFinderActivity : AppCompatActivity() {
         enableEdgeToEdge()
         auth = Firebase.auth
         binding = ActivityDeviceFinderBinding.inflate(layoutInflater)
-
         val view = binding.root
         setContentView(view)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+
+
         }
-
-//        lifecycleScope.launch { getAllowedDevices() }
-
-
 
         binding.helpIconImageView.setOnClickListener{
             showHelpDialog()
         }
 
-        getPermission()
+        var alist = emptyList<String>()
+
 
         labels = FileUtil.loadLabels(this, "labels.txt")
         imageProcessor =
@@ -146,18 +152,14 @@ class DeviceFinderActivity : AppCompatActivity() {
                         val right = locations[boxIndex + 3] * w
 
                         if (x >= left && x <= right && y >= top && y <= bottom) {
+
                             val className = labels[classes[index].toInt()]
 
-                            if (className in allowedDetectionsList) {
-                                showBottomSheetDialog(className)
-                            } else {
-                                Toast.makeText(
-                                    this,
-                                    "Por favor, clique em um eletrodoméstico.".trimIndent(),
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            }
+                            getList(className)
+
                             isClickedOnBox = true
+
+
                         }
                     }
                 }
@@ -247,14 +249,7 @@ class DeviceFinderActivity : AppCompatActivity() {
         cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
     }
 
-//    private suspend fun getAllowedDevices() {
-//        val ref = db.collection("allowedDevicesCollection").document("allowedDevicesDocument")
-//        ref.get().addOnSuccessListener {
-//            if (it != null) {
-//                allowedDetectionsList = it.data?.get("allowedDevicesList") as List<String>
-//            }
-//        }
-//    }
+
 
     private fun showHelpDialog(){
         val view = LayoutInflater.from(this).inflate(R.layout.dialog_help_device_finder, null)
@@ -353,14 +348,69 @@ class DeviceFinderActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun getDevice(itemName: String): DeviceObject? {
+    private fun getList(className: String) {
+        val databaseRef = FirebaseDatabase.getInstance()
+            .getReference("allowedDevices/devicesList")
+
+        databaseRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val devicesList = mutableListOf<String>()
+
+                for (deviceSnapshot in snapshot.children) {
+                    val device = deviceSnapshot.getValue(String::class.java)
+                    device?.let { devicesList.add(it) }
+                }
+
+                if (className in devicesList) {
+                    showBottomSheetDialog(className)
+                } else {
+                    Toast.makeText(
+                        this@DeviceFinderActivity,
+                        "Por favor, clique em um eletrodoméstico.".trimIndent(),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+                println("Devices: $devicesList")
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                println("Erro ao buscar dados: ${error.message}")
+            }
+        })
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+            getPermission()
+        }
+    }
+
+
+
+    private fun getPermission() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.CAMERA
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissions(arrayOf(android.Manifest.permission.CAMERA), 101)
+        }
+    }
+
+    private suspend fun getDevice(itemName: String): DeviceResponse? {
         try {
             val buildService = API.buildDeviceService()
-            val response = buildService.getAllDevices()
+            val response = buildService.getDeviceByName(itemName)
 
             if (response.isSuccessful) {
-                val devices = response.body()!!.content
-                return devices.find { it.name == itemName }
+                val device = response.body()
+                return device
             } else {
                 Log.e("API_ERROR", "Failed to fetch consultations")
                 return null
@@ -414,26 +464,6 @@ class DeviceFinderActivity : AppCompatActivity() {
         )
     }
 
-    private fun getPermission() {
-        if (ContextCompat.checkSelfPermission(
-                this,
-                android.Manifest.permission.CAMERA
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            requestPermissions(arrayOf(android.Manifest.permission.CAMERA), 101)
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-            getPermission()
-        }
-    }
 
     private fun closeCamera() {
         try {
