@@ -43,8 +43,10 @@ android {
 
 dependencies {
 
-
-
+    implementation (libs.kotlinx.coroutines.play.services)
+    implementation (libs.play.services.gcm)
+    implementation (libs.play.services.auth)
+    implementation(libs.firebase.firestore)
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
     implementation(libs.androidx.navigation.ui)

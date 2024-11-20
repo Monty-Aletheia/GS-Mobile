@@ -1,7 +1,6 @@
 package com.example.windrose.ui
 
 import android.annotation.SuppressLint
-import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -11,7 +10,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.SurfaceTexture
-import android.graphics.drawable.ColorDrawable
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
@@ -22,7 +20,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.Surface
 import android.view.TextureView
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -47,8 +44,10 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import org.tensorflow.lite.support.common.FileUtil
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
@@ -74,22 +73,23 @@ class DeviceFinderActivity : AppCompatActivity() {
     lateinit var cameraManager: CameraManager
     lateinit var handler: Handler
 
+    private var db = Firebase.firestore
     private var scores: FloatArray = floatArrayOf()
     private var locations: FloatArray = floatArrayOf()
     private var classes: FloatArray = floatArrayOf()
 
-    private val allowedDetectionsList: List<String> =
-        listOf(
-            "Televisão",
-            "Notebook",
-            "Celular",
-            "Micro-ondas",
-            "Fogão",
-            "Torradeira",
-            "Geladeira",
-            "Relógio",
-            "Secador de Cabelo"
-        )
+    private lateinit var allowedDetectionsList: List<String>
+//        listOf(
+//            "Televisão",
+//            "Notebook",
+//            "Celular",
+//            "Micro-ondas",
+//            "Fogão",
+//            "Torradeira",
+//            "Geladeira",
+//            "Relógio",
+//            "Secador de Cabelo"
+//        )
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -97,6 +97,7 @@ class DeviceFinderActivity : AppCompatActivity() {
         enableEdgeToEdge()
         auth = Firebase.auth
         binding = ActivityDeviceFinderBinding.inflate(layoutInflater)
+
         val view = binding.root
         setContentView(view)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -104,6 +105,10 @@ class DeviceFinderActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        lifecycleScope.launch { getAllowedDevices() }
+
+
 
         binding.helpIconImageView.setOnClickListener{
             showHelpDialog()
@@ -241,6 +246,15 @@ class DeviceFinderActivity : AppCompatActivity() {
 
         }
         cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+    }
+
+    private suspend fun getAllowedDevices() {
+        val ref = db.collection("allowedDevicesCollection").document("allowedDevicesDocument")
+        ref.get().addOnSuccessListener {
+            if (it != null) {
+                allowedDetectionsList = it.data?.get("allowedDevicesList") as List<String>
+            }
+        }.await()
     }
 
     private fun showHelpDialog(){
