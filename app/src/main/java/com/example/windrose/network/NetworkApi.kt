@@ -14,7 +14,7 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 import java.util.UUID
 
-const val URL = "http://192.168.0.181:8080/api/"
+const val URL = "http://windrose-spring.brazilsouth.cloudapp.azure.com/api/"
 
 
 data class UserDeviceDTO(

@@ -66,10 +66,10 @@ class DeviceListActivity : AppCompatActivity() {
         binding.tryAgainButton.isVisible = false
 
         binding.floatingActionButton.setOnClickListener {
-            val intent = Intent(this, DeviceFinderActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, DeviceFinderActivity::class.java))
         }
         binding.backArrowImageView.setOnClickListener {
+            startActivity(Intent(this, MainActivity::class.java))
             super.finish()
         }
 
@@ -124,7 +124,6 @@ class DeviceListActivity : AppCompatActivity() {
             .setPositiveButton("Confirmar") { dialog, _ ->
                 val deviceId = device.id
                 deleteDevice(deviceId, userid)
-                loadAllDevices()
                 dialog.dismiss()
 
             }
@@ -145,6 +144,7 @@ class DeviceListActivity : AppCompatActivity() {
             val response = buildService.deleteUserDevice(userid, userDeviceRemoveDto)
 
             if (response.isSuccessful) {
+                loadAllDevices()
                 Toast.makeText(
                     this@DeviceListActivity,
                     "Dispositivo excluído com sucesso!",
