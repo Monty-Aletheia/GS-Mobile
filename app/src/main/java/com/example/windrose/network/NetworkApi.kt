@@ -14,7 +14,7 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 import java.util.UUID
 
-const val URL = "http://windrose-spring.brazilsouth.cloudapp.azure.com/api/"
+const val URL = "http://192.168.0.181:8080/api/"
 
 
 data class UserDeviceDTO(
@@ -24,6 +24,14 @@ data class UserDeviceDTO(
 
 data class UserDeviceListDTO(
     val userDevices: List<UserDeviceDTO>
+)
+
+data class DeviceResponse(
+    val id: String,
+    val name: String,
+    val category: String,
+    val model: String,
+    val powerRating: Double
 )
 
 data class UserDeviceRemoveDTO(
@@ -124,6 +132,9 @@ interface DeviceService {
 
     @GET("devices")
     suspend fun getAllDevices(): Response<DeviceResponseDTO>
+
+    @GET("devices/find/{deviceName}")
+    suspend fun getDeviceByName(@Path("deviceName") deviceName: String): Response<DeviceResponse>
 
 }
 

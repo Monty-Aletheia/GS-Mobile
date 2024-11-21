@@ -2,6 +2,7 @@ package com.example.windrose.ui
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import com.example.windrose.repository.UserRepository.getAllUsersDevices
 import android.os.Bundle
@@ -15,6 +16,7 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -37,6 +39,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.auth.auth
 import com.google.firebase.auth.userProfileChangeRequest
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.Locale
@@ -60,6 +66,8 @@ class ProfileActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        getPermission()
 
         binding.pieChart.isVisible = false
         binding.progressBar.isVisible = true
@@ -88,6 +96,7 @@ class ProfileActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+
         lifecycleScope.launch {
             val user = getUserIdByFirebaseUid(auth.currentUser!!.uid)
             val devices = getAllUsersDevices(user!!.id, this@ProfileActivity)
@@ -96,6 +105,8 @@ class ProfileActivity : AppCompatActivity() {
             binding.dailyWasteWattTextView.text = kWattsPerDay.toString()
             binding.monthWasteTextView.text = kWattsPerMonth.toString()
         }
+
+
 
     }
 
@@ -120,6 +131,27 @@ class ProfileActivity : AppCompatActivity() {
         super.onStart()
         if (auth.currentUser == null) {
             finish()
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+            getPermission()
+        }
+    }
+
+    private fun getPermission() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.CAMERA
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissions(arrayOf(android.Manifest.permission.CAMERA), 101)
         }
     }
 
@@ -312,7 +344,7 @@ class ProfileActivity : AppCompatActivity() {
                 binding.progressBar.isVisible = false
                 return devices
             } else {
-                Log.e("API_ERROR", "Failed to fetch consultations")
+                Log.i("API_ERROR", "Failed to fetch consultations")
                 return emptyList()
             }
 

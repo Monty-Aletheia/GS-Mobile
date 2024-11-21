@@ -13,7 +13,12 @@ import com.example.windrose.R
 import com.example.windrose.databinding.FragmentLoginBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -51,6 +56,7 @@ class LoginFragment : Fragment() {
             startActivity(intent)
         }
 
+
         binding.createAccountTextView.setOnClickListener{
             findNavController().navigate(R.id.registerFragment)
         }
@@ -59,7 +65,11 @@ class LoginFragment : Fragment() {
         binding.loginButton.setOnClickListener{
             signInUser()
         }
+
+
     }
+
+
 
     override fun onStart() {
         super.onStart()
