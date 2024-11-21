@@ -38,3 +38,8 @@ O aplicativo foi desenvolvido para aumentar a conscientização sobre o consumo 
 
 ## Link para o Vídeo de Demonstração
 [Acesse o vídeo de demonstração aqui](URL-para-o-vídeo-de-demonstracao).
+
+## Hash do Último Commit
+```
+7b058cacecdbc33020737861641cfaa63ec013b6
+```
