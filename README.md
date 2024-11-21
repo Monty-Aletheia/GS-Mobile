@@ -19,7 +19,7 @@ O aplicativo foi desenvolvido para aumentar a conscientização sobre o consumo 
 2. **Passos**:
    1. Clone o repositório do projeto:
       ```bash
-      git clone <URL-do-repositório>
+      git clone https://github.com/Monty-Aletheia/GS-Mobile
       ```
    2. Abra o Android Studio e importe o projeto.
    3. Conecte um dispositivo Android ou inicie um emulador Android.
