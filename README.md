@@ -3,7 +3,7 @@
 
 ## Integrantes do Grupo
 - **RM553873 - Pedro Lucca Medeiros Miranda**
-- **RM552626 - Natan Junior Rodrigues Lopes **
+- **RM552626 - Natan Junior Rodrigues Lopes**
 - **RM553912 - Pedro Moreira de Jesus**
 
 ## Descrição do Projeto
