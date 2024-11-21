@@ -37,7 +37,7 @@ O aplicativo foi desenvolvido para aumentar a conscientização sobre o consumo 
 - O aplicativo usa o modelo **SSD MobileNet V2**, que já está integrado ao projeto.
 
 ## Link para o Vídeo de Demonstração
-[Acesse o vídeo de demonstração aqui](URL-para-o-vídeo-de-demonstracao).
+[Acesse o vídeo de demonstração aqui](https://www.youtube.com/watch?v=2B-IegtWhPU).
 
 ## Hash do Último Commit
 ```
