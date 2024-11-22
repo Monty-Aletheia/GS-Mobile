@@ -39,6 +39,10 @@ O aplicativo foi desenvolvido para aumentar a conscientização sobre o consumo 
 ## Link para o Vídeo de Demonstração
 [Acesse o vídeo de demonstração aqui](https://www.youtube.com/watch?v=2B-IegtWhPU).
 
+## Links Adicionais
+- [Documento do projeto no figma](./Wind%20Rose%20-%20GS.pdf)
+- [Acesso ao video pitch - Global Solution - Wind Rose](https://www.youtube.com/watch?v=RJH1z7ax50o)
+
 ## Hash do Último Commit
 ```
 71d0b008d1df4672b5d744b21477db01f036372b
