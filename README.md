@@ -41,5 +41,5 @@ O aplicativo foi desenvolvido para aumentar a conscientização sobre o consumo 
 
 ## Hash do Último Commit
 ```
-7b058cacecdbc33020737861641cfaa63ec013b6
+71d0b008d1df4672b5d744b21477db01f036372b
 ```
