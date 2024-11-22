@@ -51,11 +51,6 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.windRoseImageView.setOnClickListener{
-            val intent = Intent(requireContext(), DeviceFinderActivity::class.java)
-            startActivity(intent)
-        }
-
 
         binding.createAccountTextView.setOnClickListener{
             findNavController().navigate(R.id.registerFragment)
